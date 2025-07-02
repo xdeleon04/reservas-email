@@ -2,19 +2,31 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { Loader2 } from "lucide-react";
 
 type User = {
-  email: string;
+  email: string | null;
+  uid: string;
 };
 
 type AuthContextType = {
   user: User | null;
-  login: (email: string, pass: string) => Promise<boolean>;
+  login: (email: string, pass: string) => Promise<any>;
   logout: () => void;
   isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+function AuthLoadingScreen() {
+    return (
+        <div className="flex items-center justify-center h-screen w-screen bg-background">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    )
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -22,25 +34,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // In a real app, you might check for a token in localStorage here.
-    setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        setUser({ email: firebaseUser.email, uid: firebaseUser.uid });
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, pass: string): Promise<boolean> => {
-    // Hardcoded credentials for demonstration
-    if (email === "admin@example.com" && pass === "password") {
-      const newUser = { email };
-      setUser(newUser);
-      router.push("/admin");
-      return true;
+  const login = async (email: string, pass: string) => {
+    setIsLoading(true);
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        router.push("/admin");
+        return null; // Success
+    } catch (error) {
+        return error; // Return error object to the form
+    } finally {
+        setIsLoading(false);
     }
-    return false;
   };
 
   const logout = () => {
-    setUser(null);
-    router.push("/login");
+    signOut(auth).then(() => {
+        router.push("/login");
+    });
   };
+
+  if (isLoading) {
+    return <AuthLoadingScreen />;
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

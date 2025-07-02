@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { FirebaseError } from "firebase/app";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -39,22 +40,42 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "admin@example.com",
-      password: "password",
+      email: "",
+      password: "",
     },
   });
 
+  function getFirebaseErrorMessage(error: any) {
+    if (error instanceof FirebaseError) {
+        switch (error.code) {
+            case 'auth/invalid-email':
+                return 'Invalid email address format.';
+            case 'auth/user-disabled':
+                return 'This user account has been disabled.';
+            case 'auth/user-not-found':
+            case 'auth/invalid-credential':
+                return 'Invalid email or password.';
+            case 'auth/wrong-password':
+                return 'Invalid email or password.';
+            default:
+                return 'An unknown error occurred. Please try again.';
+        }
+    }
+    return 'Login failed. Please check your credentials.';
+  }
+
+
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsSubmitting(true);
-    const success = await login(values.email, values.password);
-    if (!success) {
+    const error = await login(values.email, values.password);
+    if (error) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid email or password.",
+        description: getFirebaseErrorMessage(error),
       });
     }
-    // On success, the login function handles redirection.
+    // On success, the AuthContext handles redirection.
     setIsSubmitting(false);
   }
 
@@ -66,8 +87,7 @@ export default function LoginPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-headline">Admin Login</CardTitle>
             <CardDescription>
-              Enter credentials to access the dashboard. <br />
-              (Hint: admin@example.com / password)
+              Enter credentials to access the dashboard.
             </CardDescription>
           </CardHeader>
           <CardContent>

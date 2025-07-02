@@ -13,12 +13,13 @@ import { CheckCircle, Mail, User, Clock, Tag } from "lucide-react";
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
-function ReservationDetails() {
+function ReservationDetails({ reservationId }: { reservationId: string }) {
     const searchParams = useSearchParams()
     const name = searchParams.get('name') || "Guest";
     const email = searchParams.get('email') || "No email provided";
     const time = searchParams.get('time') || "Not specified";
-    const id = searchParams.get('id') || "N/A";
+    
+    const id = reservationId || "N/A";
 
     return (
         <div className="border-t pt-6 mt-6 space-y-3 text-sm text-muted-foreground">
@@ -49,7 +50,7 @@ function ReservationDetails() {
     )
 }
 
-function ReservationConfirmationPageContent() {
+function ReservationConfirmationPageContent({ params }: { params: { id: string } }) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -58,14 +59,14 @@ function ReservationConfirmationPageContent() {
           <CardHeader className="items-center text-center p-8">
             <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
             <CardTitle className="text-2xl font-headline">
-              Reservation Confirmed!
+              Reservation Submitted!
             </CardTitle>
             <CardDescription className="pt-2">
-              A confirmation has been sent to your email.
+              Your booking is pending. A final confirmation will be sent to your email.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 pb-8">
-            <ReservationDetails />
+            <ReservationDetails reservationId={params.id} />
           </CardContent>
         </Card>
       </main>
@@ -74,10 +75,10 @@ function ReservationConfirmationPageContent() {
 }
 
 
-export default function ReservationConfirmationPage() {
+export default function ReservationConfirmationPage({ params }: { params: { id: string } }) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <ReservationConfirmationPageContent/>
+            <ReservationConfirmationPageContent params={params}/>
         </Suspense>
     )
 }

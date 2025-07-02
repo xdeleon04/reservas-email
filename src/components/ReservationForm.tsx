@@ -25,6 +25,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const reservationSchema = z.object({
   name: z.string().min(2, {
@@ -58,18 +60,36 @@ export function ReservationForm() {
 
   async function onSubmit(values: z.infer<typeof reservationSchema>) {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // In a real app, you would get an ID from the backend.
-    const reservationId = Math.random().toString(36).substring(2, 9);
-    
-    toast({
-        title: "Reservation submitted!",
-        description: "You will be redirected shortly.",
-    });
+    try {
+      const docRef = await addDoc(collection(db, "reservations"), {
+        ...values,
+        email: values.email.toLowerCase(),
+        status: "Pending",
+        createdAt: serverTimestamp(),
+      });
+      
+      toast({
+          title: "Reservation submitted!",
+          description: "Your booking is pending confirmation. You will be redirected shortly.",
+      });
 
-    router.push(`/reservation/${reservationId}`);
+      const queryParams = new URLSearchParams({
+        name: values.name,
+        email: values.email,
+        time: values.time,
+        id: docRef.id,
+      });
+
+      router.push(`/reservation/${docRef.id}?${queryParams.toString()}`);
+    } catch (error) {
+        console.error("Error adding reservation: ", error);
+        toast({
+            variant: "destructive",
+            title: "Booking Failed",
+            description: "Could not save your reservation. Please try again.",
+        });
+        setIsSubmitting(false);
+    }
   }
 
   return (

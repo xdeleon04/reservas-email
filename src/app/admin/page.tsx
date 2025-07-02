@@ -24,35 +24,49 @@ import {
   CheckCircle,
   XCircle,
   Trash2,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from "firebase/firestore";
 
 type Reservation = {
   id: string;
   name: string;
   email: string;
   time: string;
+  createdAt: Timestamp;
   status: "Pending" | "Confirmed" | "Cancelled";
 };
 
-const initialReservations: Reservation[] = [
-    { id: "res-001", name: "Alice Johnson", email: "alice@example.com", time: "2024-10-26 19:00", status: "Confirmed" },
-    { id: "res-002", name: "Bob Williams", email: "bob@example.com", time: "2024-10-26 19:30", status: "Pending" },
-    { id: "res-003", name: "Charlie Brown", email: "charlie@example.com", time: "2024-10-27 18:00", status: "Pending" },
-    { id: "res-004", name: "Diana Prince", email: "diana@example.com", time: "2024-10-27 20:00", status: "Cancelled" },
-    { id: "res-005", name: "Ethan Hunt", email: "ethan@example.com", time: "2024-10-28 21:00", status: "Confirmed" },
-];
-
 export default function AdminReservationPage() {
-  const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleStatusChange = (id: string, status: Reservation["status"]) => {
-    setReservations(reservations.map(r => r.id === id ? { ...r, status } : r));
+  useEffect(() => {
+    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const reservationsData: Reservation[] = [];
+        querySnapshot.forEach((doc) => {
+            reservationsData.push({ id: doc.id, ...doc.data() } as Reservation);
+        });
+        setReservations(reservationsData);
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleStatusChange = async (id: string, status: Reservation["status"]) => {
+    const resRef = doc(db, "reservations", id);
+    await updateDoc(resRef, { status });
   };
 
-  const handleDelete = (id: string) => {
-    setReservations(reservations.filter(r => r.id !== id));
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this reservation?")) {
+        await deleteDoc(doc(db, "reservations", id));
+    }
   };
 
   const statusVariant = {
@@ -60,7 +74,11 @@ export default function AdminReservationPage() {
     Confirmed: "default",
     Cancelled: "destructive",
   } as const;
-
+  
+  const formatTimestamp = (timestamp: Timestamp) => {
+    if (!timestamp) return "N/A";
+    return timestamp.toDate().toLocaleString();
+  }
 
   return (
     <Card>
@@ -69,12 +87,19 @@ export default function AdminReservationPage() {
             <CardDescription>View and manage all customer bookings.</CardDescription>
         </CardHeader>
         <CardContent>
+             {isLoading ? (
+                <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+            <>
             <Table>
             <TableHeader>
                 <TableRow>
                 <TableHead>Customer</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
-                <TableHead>Time</TableHead>
+                <TableHead>Booked At</TableHead>
+                <TableHead>Reservation Time</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
@@ -86,7 +111,8 @@ export default function AdminReservationPage() {
                 <TableRow key={res.id}>
                     <TableCell className="font-medium">{res.name}</TableCell>
                     <TableCell className="hidden md:table-cell">{res.email}</TableCell>
-                    <TableCell>{new Date(res.time).toLocaleString()}</TableCell>
+                    <TableCell>{formatTimestamp(res.createdAt)}</TableCell>
+                    <TableCell>{res.time}</TableCell>
                     <TableCell>
                         <Badge variant={statusVariant[res.status]}>{res.status}</Badge>
                     </TableCell>
@@ -120,7 +146,9 @@ export default function AdminReservationPage() {
                 ))}
             </TableBody>
             </Table>
-            {reservations.length === 0 && <p className="text-center p-8 text-muted-foreground">No reservations found.</p>}
+            {reservations.length === 0 && !isLoading && <p className="text-center p-8 text-muted-foreground">No reservations found.</p>}
+            </>
+            )}
         </CardContent>
     </Card>
   );

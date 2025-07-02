@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Loader2, User, Clock, Hash, BadgeCheck } from "lucide-react";
+import { Loader2, Clock, Hash } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
 
 const reviewSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -28,17 +30,8 @@ type Reservation = {
   id: string;
   name: string;
   time: string;
+  createdAt: Timestamp;
   status: "Confirmed" | "Pending" | "Cancelled";
-};
-
-const mockReservations: { [email: string]: Reservation[] } = {
-  "jane.doe@example.com": [
-    { id: "a1b2c3d4", name: "Jane Doe", time: "7:00 PM on Oct 28", status: "Confirmed" },
-    { id: "e5f6g7h8", name: "Jane Doe", time: "8:30 PM on Nov 5", status: "Pending" },
-  ],
-  "guest@test.com": [
-    { id: "i9j0k1l2", name: "Test Guest", time: "6:00 PM on Dec 1", status: "Cancelled" },
-  ],
 };
 
 export function ReviewForm() {
@@ -55,9 +48,30 @@ export function ReviewForm() {
     setIsLoading(true);
     setReservations(null);
     setSearchedEmail(values.email);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setReservations(mockReservations[values.email.toLowerCase()] || []);
-    setIsLoading(false);
+
+    try {
+        const q = query(
+            collection(db, "reservations"), 
+            where("email", "==", values.email.toLowerCase()),
+            orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const foundReservations: Reservation[] = [];
+        querySnapshot.forEach((doc) => {
+            foundReservations.push({ id: doc.id, ...doc.data() } as Reservation);
+        });
+        setReservations(foundReservations);
+    } catch (error) {
+        console.error("Error fetching reservations: ", error);
+        setReservations([]);
+    } finally {
+        setIsLoading(false);
+    }
+  }
+  
+  const formatTimestamp = (timestamp: Timestamp) => {
+    if (!timestamp) return "N/A";
+    return timestamp.toDate().toLocaleString();
   }
 
   return (
@@ -103,8 +117,8 @@ export function ReviewForm() {
               {reservations.map((res) => (
                 <Card key={res.id} className="bg-background">
                   <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                        <span>{res.name}</span>
+                    <CardTitle className="flex justify-between items-center text-base">
+                        <span>Booked on {formatTimestamp(res.createdAt).split(',')[0]}</span>
                         <Badge variant={res.status === 'Confirmed' ? 'default' : res.status === 'Cancelled' ? 'destructive' : 'secondary'}
                             className="text-sm"
                         >
@@ -113,7 +127,7 @@ export function ReviewForm() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-muted-foreground space-y-2">
-                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> {res.time}</p>
+                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> Reservation for {res.time}</p>
                      <p className="flex items-center"><Hash className="mr-2 h-4 w-4"/> Booking ID: {res.id}</p>
                   </CardContent>
                 </Card>

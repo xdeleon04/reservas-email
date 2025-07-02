@@ -2,14 +2,51 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function AdminSkeleton() {
+    return (
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="mb-6">
+            <Skeleton className="h-8 w-1/3 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+        </div>
+        <div className="flex gap-2 mb-6">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+        </div>
+        <Skeleton className="h-[500px] w-full" />
+      </div>
+    )
+}
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
   const activeTab = pathname.startsWith("/admin/tables") ? "tables" : "reservations";
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+        <div className="flex flex-col min-h-screen bg-background">
+            <Header />
+            <main className="flex-grow container mx-auto">
+                <AdminSkeleton />
+            </main>
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

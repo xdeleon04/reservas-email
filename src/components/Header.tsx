@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Utensils, Menu, X } from "lucide-react";
+import { Utensils, Menu, X, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -13,10 +13,12 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const navLinks = [
     { href: "/", label: "Reserve" },
@@ -24,21 +26,22 @@ export function Header() {
     { href: "/admin", label: "Admin" },
   ];
 
-  const NavLink = ({ href, label }: { href: string; label: string }) => (
-    <Button
-      variant="ghost"
-      asChild
-      className={cn(
-        "transition-colors",
-        pathname === href
-          ? "text-primary font-bold"
-          : "text-muted-foreground"
-      )}
-      onClick={() => setIsSheetOpen(false)}
-    >
-      <Link href={href}>{label}</Link>
-    </Button>
-  );
+  const NavLink = ({ href, label }: { href: string; label: string }) => {
+    const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+    return (
+        <Button
+        variant="ghost"
+        asChild
+        className={cn(
+            "transition-colors",
+            isActive ? "text-primary font-bold" : "text-muted-foreground"
+        )}
+        onClick={() => setIsSheetOpen(false)}
+        >
+        <Link href={href}>{label}</Link>
+        </Button>
+    )
+  };
 
   return (
     <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-50">
@@ -57,6 +60,12 @@ export function Header() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
+          {user && (
+            <Button variant="ghost" size="icon" onClick={() => logout()} title="Logout">
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Logout</span>
+            </Button>
+          )}
         </nav>
 
         {/* Mobile Navigation */}
@@ -89,6 +98,12 @@ export function Header() {
                 {navLinks.map((link) => (
                   <NavLink key={link.href} {...link} />
                 ))}
+                 {user && (
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setIsSheetOpen(false); }}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                    </Button>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

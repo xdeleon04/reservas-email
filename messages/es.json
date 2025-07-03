@@ -16,7 +16,8 @@
     "light": "Claro",
     "dark": "Oscuro",
     "system": "Sistema",
-    "toggleTheme": "Alternar tema"
+    "toggleTheme": "Alternar tema",
+    "loggedInAs": "Sesión iniciada como"
   },
   "HomePage": {
     "title": "Reserva tu Mesa",

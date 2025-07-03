@@ -50,7 +50,7 @@ function ReservationDetails({ reservationId }: { reservationId: string }) {
     )
 }
 
-function ReservationConfirmationPageContent({ params }: { params: { id: string } }) {
+function ReservationConfirmationPageContent({ reservationId }: { reservationId: string }) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -66,7 +66,7 @@ function ReservationConfirmationPageContent({ params }: { params: { id: string }
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 pb-8">
-            <ReservationDetails reservationId={params.id} />
+            <ReservationDetails reservationId={reservationId} />
           </CardContent>
         </Card>
       </main>
@@ -78,7 +78,7 @@ function ReservationConfirmationPageContent({ params }: { params: { id: string }
 export default function ReservationConfirmationPage({ params }: { params: { id: string } }) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <ReservationConfirmationPageContent params={params}/>
+            <ReservationConfirmationPageContent reservationId={params.id}/>
         </Suspense>
     )
 }

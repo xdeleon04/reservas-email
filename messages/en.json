@@ -90,6 +90,8 @@
     "emailPlaceholder": "admin@example.com",
     "password": "Password",
     "submit": "Log In",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create one",
     "toast": {
         "title": "Login Failed",
         "invalidEmail": "Invalid email address format.",
@@ -97,6 +99,27 @@
         "invalidCredential": "Invalid email or password.",
         "unknownError": "An unknown error occurred. Please try again.",
         "checkCredentials": "Login failed. Please check your credentials."
+    }
+  },
+  "SignupPage": {
+    "title": "Create Staff Account",
+    "description": "Create a new account for a staff member.",
+    "email": "Email",
+    "emailPlaceholder": "staff@example.com",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "submit": "Create Account",
+    "submitting": "Creating...",
+    "backToLogin": "Back to login",
+    "toast": {
+      "successTitle": "Account Created!",
+      "successDescription": "You can now log in with the new credentials.",
+      "failTitle": "Signup Failed",
+      "passwordMismatch": "Passwords do not match.",
+      "emailInUse": "This email is already in use.",
+      "weakPassword": "Password should be at least 6 characters.",
+      "invalidEmail": "Invalid email address format.",
+      "unknownError": "An unknown error occurred. Please try again."
     }
   },
   "AdminLayout": {

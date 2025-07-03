@@ -90,6 +90,8 @@
     "emailPlaceholder": "admin@ejemplo.com",
     "password": "Contraseña",
     "submit": "Iniciar Sesión",
+    "noAccount": "¿No tienes una cuenta?",
+    "createAccount": "Crea una",
     "toast": {
         "title": "Error de Acceso",
         "invalidEmail": "Formato de correo electrónico inválido.",
@@ -97,6 +99,27 @@
         "invalidCredential": "Correo electrónico o contraseña inválidos.",
         "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo.",
         "checkCredentials": "Acceso fallido. Por favor, revisa tus credenciales."
+    }
+  },
+  "SignupPage": {
+    "title": "Crear Cuenta de Personal",
+    "description": "Crea una nueva cuenta para un miembro del personal.",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "personal@ejemplo.com",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "submit": "Crear Cuenta",
+    "submitting": "Creando...",
+    "backToLogin": "Volver al inicio de sesión",
+    "toast": {
+      "successTitle": "¡Cuenta Creada!",
+      "successDescription": "Ya puedes iniciar sesión con las nuevas credenciales.",
+      "failTitle": "Fallo al Registrarse",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "emailInUse": "Este correo electrónico ya está en uso.",
+      "weakPassword": "La contraseña debe tener al menos 6 caracteres.",
+      "invalidEmail": "Formato de correo electrónico inválido.",
+      "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo."
     }
   },
   "AdminLayout": {

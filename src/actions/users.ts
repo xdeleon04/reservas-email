@@ -17,7 +17,8 @@ export type AppUser = {
 export async function getUsers(): Promise<AppUser[]> {
     try {
         const userRecords = await admin.auth().listUsers();
-        return userRecords.users.map((user: UserRecord) => ({
+        // Filter out users who don't have an email (e.g., anonymous users)
+        return userRecords.users.filter(user => !!user.email).map((user: UserRecord) => ({
             uid: user.uid,
             email: user.email,
             displayName: user.displayName,

@@ -1,7 +1,8 @@
+
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from "firebase/auth";
+import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, signInAnonymously } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 
@@ -20,6 +21,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   login: (email: string, pass: string) => Promise<any>;
+  signup: (email: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
   isLoading: boolean;
 };
@@ -75,6 +77,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signup = async (email: string, pass: string) => {
+    try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        // After signup, Firebase automatically signs the user in.
+        // We sign them out so they are forced to login, and the app state is reset to anonymous.
+        await signOut(auth);
+        return null;
+    } catch (error) {
+        return error;
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
@@ -84,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, Link } from "@/i18n/navigation";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -140,6 +140,12 @@ export default function LoginPage() {
                 </Button>
               </form>
             </Form>
+             <div className="mt-4 text-center text-sm">
+              {t('noAccount')}{" "}
+              <Link href="/signup" className="underline font-medium text-primary">
+                {t('createAccount')}
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </main>

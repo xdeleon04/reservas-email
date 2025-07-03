@@ -45,6 +45,8 @@ import {
 import type { Table as TableType } from "./tables/page";
 import { ConfirmReservationDialog } from "@/components/ConfirmReservationDialog";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "@/i18n/navigation";
 
 type Reservation = {
   id: string;
@@ -69,20 +71,39 @@ export default function AdminReservationPage() {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [reservationToConfirm, setReservationToConfirm] = useState<Reservation | null>(null);
 
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect if user is not authorized to see this page
   useEffect(() => {
-    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const reservationsData: Reservation[] = [];
-        querySnapshot.forEach((doc) => {
-            reservationsData.push({ id: doc.id, ...doc.data() } as Reservation);
-        });
-        setReservations(reservationsData);
-        setIsLoading(false);
-    });
+    if (!isAuthLoading && user && !user.isAdmin && !user.isReceptionist) {
+      router.replace('/admin/tables');
+    }
+  }, [user, isAuthLoading, router]);
 
-    return () => unsubscribe();
-  }, []);
+  // Fetch reservations only if user is authorized
+  useEffect(() => {
+    if (user?.isAdmin || user?.isReceptionist) {
+      const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const reservationsData: Reservation[] = [];
+          querySnapshot.forEach((doc) => {
+              reservationsData.push({ id: doc.id, ...doc.data() } as Reservation);
+          });
+          setReservations(reservationsData);
+          setIsLoading(false);
+      }, (error) => {
+          console.error("Firestore snapshot error in AdminReservationPage:", error);
+          setIsLoading(false);
+      });
 
+      return () => unsubscribe();
+    } else {
+      if (!isAuthLoading) setIsLoading(false);
+    }
+  }, [user, isAuthLoading]);
+
+  // Fetch tables (all staff can do this)
   useEffect(() => {
     const q = query(collection(db, "tables"), orderBy("name"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -185,6 +206,15 @@ export default function AdminReservationPage() {
   const formatTimestamp = (timestamp?: Timestamp) => {
     if (!timestamp) return "N/A";
     return timestamp.toDate().toLocaleString();
+  }
+
+  // Show loader while auth is resolving or if user is being redirected
+  if (isAuthLoading || (user && !user.isAdmin && !user.isReceptionist)) {
+      return (
+          <div className="flex justify-center items-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+      );
   }
 
   return (

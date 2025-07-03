@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const firebaseUser = userCredential.user;
         // Force refresh the token to get the latest custom claims.
         const idTokenResult = await firebaseUser.getIdTokenResult(true); 
-        const role = (idTokenResult.claims.role as UserRole) | null;
+        const role = (idTokenResult.claims.role as UserRole) || null;
         
         const appUser: User = {
             email: firebaseUser.email,

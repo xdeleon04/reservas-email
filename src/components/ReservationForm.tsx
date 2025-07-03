@@ -75,6 +75,7 @@ export function ReservationForm() {
       const reservationDateTime = new Date(`${format(values.date, "yyyy-MM-dd")}T${values.time}`);
 
       const docRef = await addDoc(collection(db, "reservations"), {
+        userId: user.uid,
         name: values.name,
         email: values.email.toLowerCase(),
         guests: values.guests,

@@ -69,19 +69,13 @@
     "description": "Encuentra las reservas asociadas a tu sesión actual."
   },
   "ReviewForm": {
-    "email": "Correo Electrónico",
-    "emailPlaceholder": "tu@ejemplo.com",
-    "submit": "Buscar Mis Reservas",
-    "submitting": "Buscando reservas...",
-    "validation": {
-        "email": "Por favor, introduce un correo válido."
-    },
+    "submitting": "Cargando tus reservas...",
     "results": {
-        "title": "Se encontraron {count, plural, =0 {ninguna reserva} =1 {# reserva} other {# reservas}} para ti",
+        "title": "Se encontraron {count, plural, =0 {ninguna reserva} =1 {# reserva} other {# reservas}} en tu sesión",
         "bookedOn": "Reservado el {date}",
         "guests": "{count, plural, =1 {# comensal} other {# comensales}}",
         "reservationFor": "Reserva para el {datetime}",
-        "notFound": "No se encontraron reservas para tu usuario."
+        "notFound": "No se encontraron reservas en tu sesión actual."
     }
   },
   "LoginPage": {

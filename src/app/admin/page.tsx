@@ -25,7 +25,8 @@ import {
   XCircle,
   Trash2,
   Loader2,
-  Users,
+  UserCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -51,7 +52,7 @@ type Reservation = {
   guests: number;
   reservationTime: Timestamp;
   createdAt: Timestamp;
-  status: "Pending" | "Confirmed" | "Cancelled";
+  status: "Pending" | "Confirmed" | "Seated" | "Completed" | "Cancelled";
   assignedTableId?: string;
   assignedTableName?: string;
 };
@@ -132,6 +133,32 @@ export default function AdminReservationPage() {
       setIsConfirmDialogOpen(false);
       setReservationToConfirm(null);
   }
+
+  const handleSeatGuests = async (reservation: Reservation) => {
+    if (reservation.assignedTableId) {
+        const batch = writeBatch(db);
+        const resRef = doc(db, "reservations", reservation.id);
+        batch.update(resRef, { status: "Seated" });
+
+        const tableRef = doc(db, "tables", reservation.assignedTableId);
+        batch.update(tableRef, { status: "Occupied" });
+
+        await batch.commit();
+    }
+  };
+
+  const handleCompleteReservation = async (reservation: Reservation) => {
+      if (reservation.assignedTableId) {
+          const batch = writeBatch(db);
+          const resRef = doc(db, "reservations", reservation.id);
+          batch.update(resRef, { status: "Completed" });
+
+          const tableRef = doc(db, "tables", reservation.assignedTableId);
+          batch.update(tableRef, { status: "Available" });
+
+          await batch.commit();
+      }
+  };
   
   const handleDeleteClick = (reservation: Reservation) => {
     setReservationToDelete(reservation);
@@ -149,6 +176,8 @@ export default function AdminReservationPage() {
   const statusVariant = {
     Pending: "secondary",
     Confirmed: "default",
+    Seated: "default",
+    Completed: "outline",
     Cancelled: "destructive",
   } as const;
   
@@ -204,11 +233,19 @@ export default function AdminReservationPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => handleConfirmClick(res)} disabled={res.status === 'Confirmed'}>
+                          <DropdownMenuItem onSelect={() => handleConfirmClick(res)} disabled={res.status !== 'Pending'}>
                               <CheckCircle className="mr-2 h-4 w-4" />
                               Confirm
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleCancelReservation(res)} disabled={res.status === 'Cancelled'}>
+                          <DropdownMenuItem onSelect={() => handleSeatGuests(res)} disabled={res.status !== 'Confirmed'}>
+                              <UserCheck className="mr-2 h-4 w-4" />
+                              Seat Guests
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleCompleteReservation(res)} disabled={res.status !== 'Seated'}>
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              Mark as Completed
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleCancelReservation(res)} disabled={!['Pending', 'Confirmed'].includes(res.status)}>
                               <XCircle className="mr-2 h-4 w-4" />
                               Cancel
                           </DropdownMenuItem>

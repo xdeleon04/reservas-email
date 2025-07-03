@@ -32,7 +32,7 @@ type Reservation = {
   name: string;
   reservationTime: Timestamp;
   createdAt: Timestamp;
-  status: "Confirmed" | "Pending" | "Cancelled";
+  status: "Confirmed" | "Pending" | "Cancelled" | "Seated" | "Completed";
   guests: number;
 };
 
@@ -122,7 +122,12 @@ export function ReviewForm() {
                   <CardHeader>
                     <CardTitle className="flex justify-between items-center text-base">
                         <span>Booked on {formatTimestamp(res.createdAt).split(',')[0]}</span>
-                        <Badge variant={res.status === 'Confirmed' ? 'default' : res.status === 'Cancelled' ? 'destructive' : 'secondary'}
+                        <Badge variant={
+                                res.status === 'Confirmed' || res.status === 'Seated' ? 'default' 
+                                : res.status === 'Cancelled' ? 'destructive' 
+                                : res.status === 'Completed' ? 'outline'
+                                : 'secondary'
+                            }
                             className="text-sm"
                         >
                             {res.status}

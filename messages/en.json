@@ -163,9 +163,40 @@
   },
   "AdminUserPage": {
     "title": "User Management",
-    "description": "Assign roles to staff members using a secure script.",
-    "cardTitle": "How to Assign Roles",
-    "cardDescription": "User roles (admin, receptionist, waiter) must be set using the Firebase Admin SDK from a trusted server environment. Refer to the project's README.md file for a detailed guide and a sample script to manage user roles securely."
+    "description": "Assign roles to staff members and manage user accounts.",
+    "tableHead": {
+      "user": "User",
+      "role": "Role"
+    },
+    "actions": {
+      "label": "Actions",
+      "toggleMenu": "Toggle menu",
+      "editRole": "Edit Role",
+      "delete": "Delete User"
+    },
+    "noUsers": "No users found.",
+    "deleteDialog": {
+      "title": "Are you absolutely sure?",
+      "description": "This action cannot be undone. This will permanently delete the user account for {email} and all associated data.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "roleDialog": {
+      "title": "Change User Role",
+      "description": "Select a new role for {email}.",
+      "assignRole": "Assign Role",
+      "selectPlaceholder": "Select a role",
+      "cancel": "Cancel",
+      "save": "Save Changes"
+    },
+    "toast": {
+      "roleSuccessTitle": "Role Updated",
+      "roleSuccessDescription": "The role for {email} has been changed to {role}.",
+      "roleErrorTitle": "Update Failed",
+      "deleteSuccessTitle": "User Deleted",
+      "deleteSuccessDescription": "The user {email} has been permanently deleted.",
+      "deleteErrorTitle": "Delete Failed"
+    }
   },
   "TableDialog": {
     "editTitle": "Edit Table",

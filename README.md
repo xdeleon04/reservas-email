@@ -1,3 +1,4 @@
+
 # Reservas Email
 
 Reservas Email is a modern, streamlined web application for managing restaurant reservations. It allows customers to book tables easily using just their email, and provides a comprehensive dashboard for administrators to manage reservations and restaurant tables.
@@ -50,7 +51,10 @@ To get a local copy up and running, follow these simple steps.
     ```
 
 3.  **Set up environment variables**:
-    Create a `.env.local` file in the root of your project and add your Firebase configuration:
+    Create a `.env.local` file in the root of your project and add your Firebase configuration.
+
+    **Client-Side Keys:**
+    Add your Firebase configuration for the client app:
     ```env
     NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -59,6 +63,21 @@ To get a local copy up and running, follow these simple steps.
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
     NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
     ```
+
+    **Server-Side Keys (for Admin SDK):**
+    To enable admin functionalities like user management, you need to provide server-side credentials from your Firebase project's service account.
+
+    1.  In the Firebase Console, go to **Project settings** > **Service accounts**.
+    2.  Select your project, and click **Generate new private key**. A JSON file containing your service account credentials will be downloaded.
+    3.  Open the JSON file and copy the values into your `.env.local` file as shown below:
+
+    ```env
+    # From your service account JSON file
+    FIREBASE_PROJECT_ID="your-project-id"
+    FIREBASE_CLIENT_EMAIL="firebase-adminsdk-..."
+    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...your...private...key...\n-----END PRIVATE KEY-----\n"
+    ```
+    **Important:** For `FIREBASE_PRIVATE_KEY`, you must wrap the entire key, including the `-----BEGIN...` and `-----END...` lines, in double quotes (`"`). Replace all literal newlines within the key with the `\n` character.
     
 4.  **Deploy Firestore Rules**:
     Deploy the security rules located in `firestore.rules` to your Firebase project using the Firebase CLI:
@@ -78,46 +97,20 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Security: Setting User Roles
 
-This application uses Firebase Custom Claims to manage user roles (`admin`, `receptionist`, `waiter`). These roles must be set from a trusted server environment using the Firebase Admin SDK. **They cannot be set from the client-side app.**
+User roles (`admin`, `receptionist`, `waiter`) are managed via Firebase Custom Claims. Initially, no user has an admin role. You must assign the first admin role to a user who has already signed up in your application. You can do this in two ways:
+
+1.  **Via the App (Recommended)**: Once you have set up the environment variables (including the Admin SDK keys), run the app, log in as an administrator, navigate to the **Admin > Users** tab. From there, you can assign roles to any user.
+2.  **Via a Script**: You can use the provided script for initial setup.
 
 Here is an example Node.js script to assign a role to a user.
 
 1.  **Set up the Admin script**:
-    -   Create a folder outside your app project (e.g., `admin-scripts`).
-    -   Run `npm init -y` and `npm install firebase-admin`.
-    -   Download your Firebase project's service account key (a JSON file) from the Firebase Console (`Project settings` > `Service accounts`) and place it in this folder.
+    -   Navigate to the `admin-scripts` folder.
+    -   Run `npm install firebase-admin`.
+    -   Ensure your service account key JSON file is in this folder.
 
-2.  **Create a script (`set-role.js`)**:
-
-    ```javascript
-    // set-role.js
-    const admin = require('firebase-admin');
-    // IMPORTANT: Replace with the path to your service account key
-    const serviceAccount = require('./path-to-your-service-account-key.json');
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-
-    const userEmail = 'user@example.com'; // The email of the user to modify
-    const targetRole = 'admin'; // The role to assign: 'admin', 'receptionist', or 'waiter'
-
-    async function setCustomRole(email, role) {
-      try {
-        const user = await admin.auth().getUserByEmail(email);
-        await admin.auth().setCustomUserClaims(user.uid, { role: role });
-        console.log(`Success! Custom claim '${role}' set for user ${email}`);
-        process.exit(0);
-      } catch (error) {
-        console.error('Error setting custom claim:', error);
-        process.exit(1);
-      }
-    }
-
-    setCustomRole(userEmail, targetRole);
-    ```
-
-3.  **Run the script**:
+2.  **Run the script**:
+    Update the `set-role.js` script with the email and desired role, then run:
     ```sh
     node set-role.js
     ```

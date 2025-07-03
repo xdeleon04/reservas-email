@@ -163,9 +163,40 @@
   },
   "AdminUserPage": {
     "title": "Gestión de Usuarios",
-    "description": "Asigna roles al personal usando un script seguro.",
-    "cardTitle": "Cómo Asignar Roles",
-    "cardDescription": "Los roles de usuario (admin, receptionist, waiter) deben establecerse utilizando el SDK de Firebase Admin desde un entorno de servidor seguro. Consulta el archivo README.md del proyecto para una guía detallada y un script de ejemplo para gestionar los roles de usuario de forma segura."
+    "description": "Asigna roles a los miembros del personal y gestiona sus cuentas.",
+    "tableHead": {
+      "user": "Usuario",
+      "role": "Rol"
+    },
+    "actions": {
+      "label": "Acciones",
+      "toggleMenu": "Alternar menú",
+      "editRole": "Editar Rol",
+      "delete": "Eliminar Usuario"
+    },
+    "noUsers": "No se encontraron usuarios.",
+    "deleteDialog": {
+      "title": "¿Estás absolutamente seguro?",
+      "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario {email} y todos sus datos asociados.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "roleDialog": {
+      "title": "Cambiar Rol de Usuario",
+      "description": "Selecciona un nuevo rol para {email}.",
+      "assignRole": "Asignar Rol",
+      "selectPlaceholder": "Seleccionar un rol",
+      "cancel": "Cancelar",
+      "save": "Guardar Cambios"
+    },
+    "toast": {
+      "roleSuccessTitle": "Rol Actualizado",
+      "roleSuccessDescription": "El rol para {email} ha sido cambiado a {role}.",
+      "roleErrorTitle": "Fallo al Actualizar",
+      "deleteSuccessTitle": "Usuario Eliminado",
+      "deleteSuccessDescription": "El usuario {email} ha sido eliminado permanentemente.",
+      "deleteErrorTitle": "Fallo al Eliminar"
+    }
   },
   "TableDialog": {
     "editTitle": "Editar Mesa",

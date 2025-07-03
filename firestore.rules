@@ -2,43 +2,38 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    function isAuth() {
-      return request.auth != null;
-    }
-    
-    function getUserRole() {
-      return request.auth.token.role;
-    }
-    
-    function isAdmin() {
-      return isAuth() && getUserRole() == 'admin';
+
+    function isOneOfRoles(roles) {
+      return request.auth.uid != null && request.auth.token.role in roles;
     }
 
-    function isReceptionist() {
-      return isAuth() && getUserRole() == 'receptionist';
-    }
-
-    function isWaiter() {
-        return isAuth() && getUserRole() == 'waiter';
-    }
-    
-    function isStaff() {
-        return isAdmin() || isReceptionist() || isWaiter();
+    function isOwner(email) {
+      return request.auth.uid != null && request.auth.token.email == email;
     }
 
     match /reservations/{reservationId} {
-      allow read: if isAuth() && (isAdmin() || isReceptionist() || request.auth.uid == resource.data.userId);
-      allow list: if isAdmin() || isReceptionist();
-      allow create: if isAuth();
-      allow update, delete: if isAdmin() || isReceptionist();
+      // Anyone can create a reservation.
+      allow create: if true;
+
+      // Admins/receptionists can read all. Waiters can read confirmed/seated ones.
+      // A signed-in user can read their own reservations.
+      allow read: if isOneOfRoles(['admin', 'receptionist']) ||
+                     (isOneOfRoles(['waiter']) && resource.data.status in ['Confirmed', 'Seated']) ||
+                     isOwner(resource.data.email);
+
+      // Only admins/receptionists can modify reservations.
+      allow update, delete: if isOneOfRoles(['admin', 'receptionist']);
     }
 
     match /tables/{tableId} {
-      allow read: if isStaff();
-      allow create, delete: if isAdmin();
-      // Let client-side logic handle specific status transitions
-      allow update: if isStaff();
+      // All staff can read tables.
+      allow read: if isOneOfRoles(['admin', 'receptionist', 'waiter']);
+
+      // Only admins can create or delete tables.
+      allow create, delete: if isOneOfRoles(['admin']);
+      
+      // All staff can update tables (e.g., status). UI restricts specific actions.
+      allow update: if isOneOfRoles(['admin', 'receptionist', 'waiter']);
     }
   }
 }

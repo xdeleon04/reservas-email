@@ -97,24 +97,38 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Security: Setting User Roles
 
-User roles (`admin`, `receptionist`, `waiter`) are managed via Firebase Custom Claims. Initially, no user has an admin role. You must assign the first admin role to a user who has already signed up in your application. You can do this in two ways:
+User roles (`admin`, `receptionist`, `waiter`) are managed via Firebase Custom Claims. For the app's role-based features to work, you must have your Admin SDK credentials set up in your `.env.local` file (see "Set up environment variables").
 
-1.  **Via the App (Recommended)**: Once you have set up the environment variables (including the Admin SDK keys), run the app, log in as an administrator, navigate to the **Admin > Users** tab. From there, you can assign roles to any user.
-2.  **Via a Script**: You can use the provided script for initial setup.
+### Initial Admin Setup (Required)
 
-Here is an example Node.js script to assign a role to a user.
+Initially, no user has an `admin` role. You **must** use a command-line script to assign the `admin` role to the first user. This user must have already signed up for an account in your application.
 
-1.  **Set up the Admin script**:
-    -   Navigate to the `admin-scripts` folder.
-    -   Run `npm install firebase-admin`.
-    -   Ensure your service account key JSON file is in this folder.
+1.  **Sign Up First**: Run the app and create a new staff account for the user you want to make an administrator.
 
-2.  **Run the script**:
-    Update the `set-role.js` script with the email and desired role, then run:
+2.  **Run the Role-Assignment Script**: From your project's root directory, run the following command, replacing the email and role with your desired values:
+
     ```sh
-    node set-role.js
+    node admin-scripts/set-role.js your-admin-email@example.com admin
     ```
-    After running, the user will have their new role the next time they log in or their token is refreshed.
+
+    If successful, the script will confirm the role has been assigned. The user can now log in and access the Admin Dashboard.
+
+### Managing Roles in the App
+
+Once you have an administrator account, you can manage all other user roles directly within the application:
+
+1.  Log in as a user with the `admin` role.
+2.  Navigate to the **Admin > Users** tab.
+3.  From here, you can assign or change the roles for any user who has signed up.
+
+The script can also be used to assign other roles from the command line:
+```sh
+# Assign a receptionist role
+node admin-scripts/set-role.js user@example.com receptionist
+
+# Assign a waiter role
+node admin-scripts/set-role.js user@example.com waiter
+```
 
 ## Available Scripts
 
@@ -124,3 +138,4 @@ In the project directory, you can run:
 -   `npm run build`: Builds the app for production.
 -   `npm run start`: Starts a production server.
 -   `npm run lint`: Lints the code using Next.js's built-in ESLint configuration.
+

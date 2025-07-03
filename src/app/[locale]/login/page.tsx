@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -94,14 +95,15 @@ export default function LoginPage() {
 
     if (loggedInUser && !loggedInUser.isAnonymous) {
       // Check if the user has been assigned a role by an admin.
-      const hasRole = loggedInUser.role && ['admin', 'receptionist', 'waiter'].includes(loggedInUser.role);
+      const hasRole = loggedInUser.isAdmin || loggedInUser.isReceptionist || loggedInUser.isWaiter;
       
       if (hasRole) {
+          console.log("User has a role, redirecting to admin page.");
           router.push("/admin");
       } else {
           // If the user has no role, they are considered pending approval.
-          //setIsUnapprovedDialogOpen(true);
-          router.push("/admin");
+          console.log("User has no role, showing approval dialog.");
+          setIsUnapprovedDialogOpen(true);
       }
     } else {
       setIsSubmitting(false);

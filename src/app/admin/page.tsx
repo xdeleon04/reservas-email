@@ -35,7 +35,7 @@ type Reservation = {
   id: string;
   name: string;
   email: string;
-  time: string;
+  reservationTime: Timestamp;
   createdAt: Timestamp;
   status: "Pending" | "Confirmed" | "Cancelled";
 };
@@ -99,7 +99,7 @@ export default function AdminReservationPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
                 <TableHead>Booked At</TableHead>
-                <TableHead>Reservation Time</TableHead>
+                <TableHead>Reservation Date &amp; Time</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
@@ -112,7 +112,7 @@ export default function AdminReservationPage() {
                     <TableCell className="font-medium">{res.name}</TableCell>
                     <TableCell className="hidden md:table-cell">{res.email}</TableCell>
                     <TableCell>{formatTimestamp(res.createdAt)}</TableCell>
-                    <TableCell>{res.time}</TableCell>
+                    <TableCell>{formatTimestamp(res.reservationTime)}</TableCell>
                     <TableCell>
                         <Badge variant={statusVariant[res.status]}>{res.status}</Badge>
                     </TableCell>

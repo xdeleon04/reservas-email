@@ -30,7 +30,7 @@ const reviewSchema = z.object({
 type Reservation = {
   id: string;
   name: string;
-  time: string;
+  reservationTime: Timestamp;
   createdAt: Timestamp;
   status: "Confirmed" | "Pending" | "Cancelled";
 };
@@ -129,7 +129,7 @@ export function ReviewForm() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-muted-foreground space-y-2">
-                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> Reservation for {res.time}</p>
+                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> Reservation for {formatTimestamp(res.reservationTime)}</p>
                   </CardContent>
                 </Card>
               ))}

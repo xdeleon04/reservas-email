@@ -23,11 +23,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar } from "./ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const reservationSchema = z.object({
   name: z.string().min(2, {
@@ -35,6 +39,9 @@ const reservationSchema = z.object({
   }),
   email: z.string().email({
     message: "Please enter a valid email address.",
+  }),
+  date: z.date({
+    required_error: "A date is required.",
   }),
   time: z.string({
     required_error: "Please select a preferred time.",
@@ -72,11 +79,28 @@ export function ReservationForm() {
 
     setIsSubmitting(true);
     try {
+      const [hourString, minutePart] = values.time.split(':');
+      const [minuteString, period] = minutePart.split(' ');
+      
+      let hours = parseInt(hourString, 10);
+      const minutes = parseInt(minuteString, 10);
+
+      if (period.toUpperCase() === 'PM' && hours < 12) {
+        hours += 12;
+      }
+      if (period.toUpperCase() === 'AM' && hours === 12) {
+        hours = 0; // Handle midnight
+      }
+
+      const reservationDateTime = new Date(values.date);
+      reservationDateTime.setHours(hours, minutes, 0, 0);
+
       const docRef = await addDoc(collection(db, "reservations"), {
-        ...values,
+        name: values.name,
         email: values.email.toLowerCase(),
         status: "Pending",
         createdAt: serverTimestamp(),
+        reservationTime: reservationDateTime,
       });
       
       toast({
@@ -87,8 +111,7 @@ export function ReservationForm() {
       const queryParams = new URLSearchParams({
         name: values.name,
         email: values.email,
-        time: values.time,
-        id: docRef.id,
+        time: reservationDateTime.toISOString(),
       });
 
       router.push(`/reservation/${docRef.id}?${queryParams.toString()}`);
@@ -132,30 +155,73 @@ export function ReservationForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="time"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Preferred Time</FormLabel>
-              <Select onValuechange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a time slot" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {availableTimes.map((time) => (
-                    <SelectItem key={time} value={time}>
-                      {time}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+                <FormItem className="flex flex-col">
+                <FormLabel>Date</FormLabel>
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <FormControl>
+                        <Button
+                        variant={"outline"}
+                        className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                        )}
+                        >
+                        {field.value ? (
+                            format(field.value, "PPP")
+                        ) : (
+                            <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                    </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                            date < new Date(new Date().setDate(new Date().getDate() - 1))
+                        }
+                        initialFocus
+                    />
+                    </PopoverContent>
+                </Popover>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="time"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Preferred Time</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a time slot" />
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    {availableTimes.map((time) => (
+                        <SelectItem key={time} value={time}>
+                        {time}
+                        </SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+        </div>
         <Button type="submit" className="w-full" disabled={isSubmitting || !user}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isSubmitting ? "Booking..." : "Reserve Your Table"}

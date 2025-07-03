@@ -17,7 +17,8 @@ function ReservationDetails() {
     const searchParams = useSearchParams()
     const name = searchParams.get('name') || "Guest";
     const email = searchParams.get('email') || "No email provided";
-    const time = searchParams.get('time') || "Not specified";
+    const timeISO = searchParams.get('time')
+    const dateTime = timeISO ? new Date(timeISO).toLocaleString() : "Not specified";
     
     return (
         <div className="border-t pt-6 mt-6 space-y-3 text-sm text-muted-foreground">
@@ -36,14 +37,15 @@ function ReservationDetails() {
             </div>
             <div className="flex items-center">
                 <Clock className="mr-3 h-4 w-4 flex-shrink-0" />
-                <span className="font-medium text-foreground">Time:</span>
-                <span className="ml-auto">{time}</span>
+                <span className="font-medium text-foreground">Date &amp; Time:</span>
+                <span className="ml-auto">{dateTime}</span>
             </div>
         </div>
     )
 }
 
 function ReservationConfirmationPageContent() {
+  const params = useParams<{ id: string }>();
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />

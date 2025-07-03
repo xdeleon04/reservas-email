@@ -60,7 +60,6 @@ export function ReviewForm() {
         const q = query(
             collection(db, "reservations"), 
             where("email", "==", values.email.toLowerCase()),
-            where("uid", "==", user.uid),
             orderBy("createdAt", "desc")
         );
         const querySnapshot = await getDocs(q);

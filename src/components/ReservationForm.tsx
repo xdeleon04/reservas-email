@@ -74,7 +74,6 @@ export function ReservationForm() {
     try {
       const docRef = await addDoc(collection(db, "reservations"), {
         ...values,
-        uid: user.uid,
         email: values.email.toLowerCase(),
         status: "Pending",
         createdAt: serverTimestamp(),
@@ -139,7 +138,7 @@ export function ReservationForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Preferred Time</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValuechange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a time slot" />

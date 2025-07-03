@@ -3,29 +3,27 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     function isAdmin() {
-      // In a production app, use custom claims for security.
-      // For this example, we identify the admin by their email.
+      // Allow access for a specific admin email
       return request.auth.token.email == 'admin@example.com';
     }
 
-    // Rules for the 'reservations' collection
     match /reservations/{reservationId} {
-      // Admins can perform any action on any reservation.
-      allow read, write: if isAdmin();
+      // Any authenticated user (including anonymous) can create a reservation.
+      allow create: if request.auth.uid != null;
       
-      // Authenticated (including anonymous) users can create their own reservations.
-      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      // Any authenticated user can read reservations, needed for email lookup.
+      // Admin can also read.
+      allow read: if request.auth.uid != null || isAdmin();
       
-      // Users can only read their own reservations.
-      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      // Only admin can update or delete reservations.
+      allow update, delete: if isAdmin();
     }
-
-    // Rules for the 'tables' collection
+    
     match /tables/{tableId} {
-      // Only admins can read or write tables.
-      allow read, write: if isAdmin();
+        // Only admin can manage tables.
+        allow read, write: if isAdmin();
     }
   }
 }

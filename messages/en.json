@@ -175,7 +175,8 @@
         "edit": "Edit",
         "delete": "Delete",
         "markCleaning": "Mark as Cleaning",
-        "markAvailable": "Mark as Available"
+        "markAvailable": "Mark as Available",
+        "markOccupied": "Mark as Occupied"
     },
     "noTables": "No tables configured. Add one to get started.",
     "deleteDialog": {

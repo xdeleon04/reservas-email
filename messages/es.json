@@ -175,7 +175,8 @@
         "edit": "Editar",
         "delete": "Eliminar",
         "markCleaning": "Marcar en limpieza",
-        "markAvailable": "Marcar como disponible"
+        "markAvailable": "Marcar como disponible",
+        "markOccupied": "Marcar como Ocupada"
     },
     "noTables": "No hay mesas configuradas. Añade una para empezar.",
     "deleteDialog": {

@@ -1,49 +1,67 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
     // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
     function isStaff() {
-      return request.auth.token.role in ['admin', 'receptionist', 'waiter'];
+      return isSignedIn() && request.auth.token.role in ['admin', 'receptionist', 'waiter'];
     }
-    
+
     function isAdmin() {
-      return request.auth.token.role == 'admin';
+      return isSignedIn() && request.auth.token.role == 'admin';
     }
-    
+
     function isReceptionist() {
-      return request.auth.token.role == 'receptionist';
+        return isSignedIn() && request.auth.token.role == 'receptionist';
     }
 
     function isWaiter() {
-        return request.auth.token.role == 'waiter';
+        return isSignedIn() && request.auth.token.role == 'waiter';
     }
     
-    // Check that only allowed fields are being modified.
-    // In our case, only 'status' can be updated by non-admins.
-    function isUpdatingStatusOnly() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+    function isAdminOrReceptionist() {
+      return isAdmin() || isReceptionist();
     }
 
+    // Reservations
     match /reservations/{reservationId} {
-      allow create: if true;
-      // Staff can read reservations. Waiters will be limited by the client-side query.
-      // This is necessary because security rules for `list` operations cannot inspect document fields.
-      allow read: if isStaff();
-      // Admin and Receptionist can update/delete reservations.
-      allow update, delete: if isAdmin() || isReceptionist();
+      // Allow anonymous users to create reservations
+      allow create: if request.resource.data.email == request.auth.token.email || request.auth.token.email == null;
+
+      // Allow admins and receptionists to read/write all reservations
+      allow read, update, delete: if isAdminOrReceptionist();
+      
+      // Allow waiters to read reservations that are Confirmed or Seated for their queries.
+      // Note: This rule is broad for list queries. More specific access is handled by the UI.
+      allow read: if isWaiter();
+      
+      // Allow any authenticated user to read their own reservations
+      allow read: if isSignedIn() && resource.data.email == request.auth.token.email;
     }
     
+    // Tables
     match /tables/{tableId} {
-      allow create, delete: if isAdmin();
+      // Allow any staff member to read table data
       allow read: if isStaff();
       
-      // Admin can update anything.
-      // Receptionist/Waiter can only update the 'status' field to specific values.
-      allow update: if isAdmin() ||
-                      (isReceptionist() && isUpdatingStatusOnly() && request.resource.data.status in ['Reserved', 'Occupied', 'Available', 'Cleaning']) ||
-                      (isWaiter() && isUpdatingStatusOnly() && request.resource.data.status in ['Cleaning', 'Available']);
+      // Allow admins to create/delete tables
+      allow create, delete: if isAdmin();
+      
+      // Allow admins to update all fields.
+      // Allow receptionists & waiters to only update the 'status' field.
+      allow update: if isAdmin() || 
+                     ((isReceptionist() || isWaiter()) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+    }
+    
+    // Users collection - no client access
+    match /users/{userId} {
+      allow read, write: if false;
     }
   }
 }

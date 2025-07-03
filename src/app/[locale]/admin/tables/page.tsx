@@ -34,6 +34,7 @@ import {
   orderBy,
   where,
   Timestamp,
+  writeBatch,
 } from "firebase/firestore";
 import {
   AlertDialog,
@@ -155,8 +156,24 @@ export default function AdminTablePage() {
     table: Table,
     status: Table["status"]
   ) => {
-    const tableRef = doc(db, "tables", table.id);
-    await updateDoc(tableRef, { status });
+    // If a table is being cleaned, the reservation is completed.
+    if (status === "Cleaning" && table.status === "Occupied") {
+      const reservation = reservationsByTableId[table.id];
+      const batch = writeBatch(db);
+      
+      const tableRef = doc(db, "tables", table.id);
+      batch.update(tableRef, { status: "Cleaning" });
+
+      if (reservation) {
+        const resRef = doc(db, "reservations", reservation.id);
+        batch.update(resRef, { status: "Completed" });
+      }
+      await batch.commit();
+    } else {
+      // For other status updates (e.g. walk-ins, or marking available after cleaning)
+      const tableRef = doc(db, "tables", table.id);
+      await updateDoc(tableRef, { status });
+    }
   };
 
   const statusVariant = {
@@ -241,6 +258,13 @@ export default function AdminTablePage() {
                           {/* Receptionist Actions */}
                            {user?.isReceptionist && (
                             <>
+                              <Button
+                                variant="outline"
+                                onClick={() => handleUpdateStatus(table, "Occupied")}
+                                disabled={table.status !== "Available"}
+                              >
+                                <User className="mr-2 h-4 w-4" /> {t("actions.markOccupied")}
+                              </Button>
                               <Button
                                 variant="outline"
                                 onClick={() => handleUpdateStatus(table, "Cleaning")}

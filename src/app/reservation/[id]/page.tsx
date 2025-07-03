@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Header } from "@/components/Header";
@@ -10,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle, Mail, User, Clock, Tag } from "lucide-react";
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useParams } from 'next/navigation'
 import { Suspense } from 'react'
 
 function ReservationDetails({ reservationId }: { reservationId: string }) {
@@ -75,10 +74,13 @@ function ReservationConfirmationPageContent({ reservationId }: { reservationId: 
 }
 
 
-export default function ReservationConfirmationPage({ params }: { params: { id: string } }) {
+export default function ReservationConfirmationPage() {
+    const params = useParams();
+    const reservationId = Array.isArray(params.id) ? params.id[0] : (params.id as string) || '';
+
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <ReservationConfirmationPageContent reservationId={params.id}/>
+            <ReservationConfirmationPageContent reservationId={reservationId}/>
         </Suspense>
     )
 }

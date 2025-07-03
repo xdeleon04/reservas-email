@@ -5,10 +5,16 @@ import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, s
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 
+type UserRole = 'admin' | 'receptionist' | 'waiter' | null;
+
 type User = {
   email: string | null;
   uid: string;
   isAnonymous: boolean;
+  role: UserRole;
+  isAdmin: boolean;
+  isReceptionist: boolean;
+  isWaiter: boolean;
 };
 
 type AuthContextType = {
@@ -33,17 +39,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
+        const idTokenResult = await firebaseUser.getIdTokenResult();
+        const role = (idTokenResult.claims.role as UserRole) || null;
+        
         setUser({
             email: firebaseUser.email,
             uid: firebaseUser.uid,
-            isAnonymous: firebaseUser.isAnonymous
+            isAnonymous: firebaseUser.isAnonymous,
+            role: role,
+            isAdmin: role === 'admin',
+            isReceptionist: role === 'receptionist',
+            isWaiter: role === 'waiter'
         });
         setIsLoading(false);
       } else {
         signInAnonymously(auth).catch((error) => {
             console.error("Anonymous sign in failed:", error);
+        }).finally(() => {
             setIsLoading(false);
         });
       }
@@ -53,13 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, pass: string) => {
-    //setIsLoading(true); // This causes a flash on failed login
     try {
         await signInWithEmailAndPassword(auth, email, pass);
-        // Let the calling component handle routing on success
         return null; 
     } catch (error) {
-        return error; // Return error object to the form
+        return error;
     }
   };
 

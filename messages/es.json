@@ -65,45 +65,34 @@
   },
   "ReviewPage": {
     "title": "Consulta tu Reserva",
-    "description": "Introduce tu correo para encontrar tus reservas."
+    "description": "Encuentra las reservas asociadas a tu sesión actual."
   },
   "ReviewForm": {
     "email": "Correo Electrónico",
     "emailPlaceholder": "tu@ejemplo.com",
-    "submit": "Buscar Reservas",
+    "submit": "Buscar Mis Reservas",
     "submitting": "Buscando reservas...",
     "validation": {
         "email": "Por favor, introduce un correo válido."
     },
     "results": {
-        "title": "Se encontraron {count, plural, =0 {ninguna reserva} =1 {# reserva} other {# reservas}} para",
+        "title": "Se encontraron {count, plural, =0 {ninguna reserva} =1 {# reserva} other {# reservas}} para ti",
         "bookedOn": "Reservado el {date}",
         "guests": "{count, plural, =1 {# comensal} other {# comensales}}",
         "reservationFor": "Reserva para el {datetime}",
-        "notFound": "No se encontraron reservas para este correo electrónico."
+        "notFound": "No se encontraron reservas para tu usuario."
     }
   },
   "LoginPage": {
-    "title": "Acceso de Administrador",
-    "description": "Introduce tus credenciales para acceder al panel.",
-    "email": "Correo",
-    "emailPlaceholder": "admin@ejemplo.com",
-    "password": "Contraseña",
-    "submit": "Iniciar Sesión",
-    "toast": {
-        "title": "Fallo de Inicio de Sesión",
-        "invalidEmail": "Formato de correo inválido.",
-        "userDisabled": "Esta cuenta de usuario ha sido deshabilitada.",
-        "invalidCredential": "Correo o contraseña inválidos.",
-        "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo.",
-        "checkCredentials": "Fallo de inicio de sesión. Por favor, revisa tus credenciales."
-    }
+    "title": "Acceso de Personal",
+    "description": "Introduce tus credenciales para acceder al panel."
   },
   "AdminLayout": {
     "title": "Panel de Administración",
-    "description": "Gestiona las reservas y mesas de tu restaurante.",
+    "description": "Gestiona las operaciones de tu restaurante.",
     "reservations": "Reservas",
-    "tables": "Mesas"
+    "tables": "Mesas",
+    "users": "Usuarios"
   },
   "AdminReservationPage": {
     "cardTitle": "Todas las Reservas",
@@ -133,8 +122,8 @@
     }
   },
   "AdminTablePage": {
-    "cardTitle": "Gestionar Mesas",
-    "cardDescription": "Añadir, editar o eliminar mesas del restaurante.",
+    "cardTitle": "Gestión de Mesas",
+    "cardDescription": "Vista general del estado del salón.",
     "addTable": "Añadir Mesa",
     "tableHead": {
         "name": "Nombre",
@@ -143,7 +132,9 @@
     },
     "actions": {
         "edit": "Editar",
-        "delete": "Eliminar"
+        "delete": "Eliminar",
+        "markCleaning": "Marcar en limpieza",
+        "markAvailable": "Marcar como disponible"
     },
     "noTables": "No hay mesas configuradas. Añade una para empezar.",
     "deleteDialog": {
@@ -151,7 +142,18 @@
         "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la mesa llamada \"{name}\".",
         "cancel": "Cancelar",
         "confirm": "Eliminar"
+    },
+    "tableCard": {
+        "capacity": "Capacidad: {capacity}",
+        "customer": "Cliente: {name}",
+        "noCustomer": "Sin cliente asignado"
     }
+  },
+  "AdminUserPage": {
+    "title": "Gestión de Usuarios",
+    "description": "Asigna roles al personal usando un script seguro.",
+    "cardTitle": "Cómo Asignar Roles",
+    "cardDescription": "Los roles de usuario (admin, receptionist, waiter) deben establecerse utilizando el SDK de Firebase Admin desde un entorno de servidor seguro. Consulta el archivo README.md del proyecto para una guía detallada y un script de ejemplo para gestionar los roles de usuario de forma segura."
   },
   "TableDialog": {
     "editTitle": "Editar Mesa",
@@ -166,6 +168,7 @@
     "available": "Disponible",
     "occupied": "Ocupada",
     "reserved": "Reservada",
+    "cleaning": "En limpieza",
     "cancel": "Cancelar",
     "save": "Guardar",
     "validation": {
@@ -189,7 +192,11 @@
     "Confirmed": "Confirmada",
     "Seated": "Sentados",
     "Completed": "Completada",
-    "Cancelled": "Cancelada"
+    "Cancelled": "Cancelada",
+    "Available": "Disponible",
+    "Occupied": "Ocupada",
+    "Reserved": "Reservada",
+    "Cleaning": "En limpieza"
   },
   "Metadata": {
     "title": "Reservas Email",

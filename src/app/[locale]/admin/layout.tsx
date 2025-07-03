@@ -30,15 +30,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const activeTab = pathname.startsWith("/admin/tables") ? "tables" : "reservations";
+  
+  const isStaff = user && (user.isAdmin || user.isReceptionist || user.isWaiter);
+  
+  let activeTab = "tables";
+  if (pathname.startsWith("/admin/users")) activeTab = "users";
+  else if (pathname.startsWith("/admin") && (pathname.length === 6 || pathname.endsWith('/admin/'))) activeTab = "reservations";
 
   useEffect(() => {
-    if (!isLoading && (!user || user.isAnonymous)) {
+    if (!isLoading && !isStaff) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, isStaff]);
 
-  if (isLoading || !user || user.isAnonymous) {
+  if (isLoading || !isStaff) {
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <Header />
@@ -58,13 +63,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <p className="text-muted-foreground">{t('description')}</p>
         </div>
         <Tabs value={activeTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-sm">
-            <TabsTrigger value="reservations" asChild>
-              <Link href="/admin">{t('reservations')}</Link>
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 max-w-md">
+            {(user.isAdmin || user.isReceptionist) && (
+              <TabsTrigger value="reservations" asChild>
+                <Link href="/admin">{t('reservations')}</Link>
+              </TabsTrigger>
+            )}
+            {/* All staff can see tables */}
             <TabsTrigger value="tables" asChild>
               <Link href="/admin/tables">{t('tables')}</Link>
             </TabsTrigger>
+            {user.isAdmin && (
+              <TabsTrigger value="users" asChild>
+                <Link href="/admin/users">{t('users')}</Link>
+              </TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
         <div className="mt-6">{children}</div>

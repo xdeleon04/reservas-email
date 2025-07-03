@@ -65,22 +65,22 @@
   },
   "ReviewPage": {
     "title": "Review Your Reservation",
-    "description": "Enter your email address to find your bookings."
+    "description": "Find the reservations associated with your current session."
   },
   "ReviewForm": {
     "email": "Email Address",
     "emailPlaceholder": "you@example.com",
-    "submit": "Find Reservations",
+    "submit": "Find My Reservations",
     "submitting": "Searching for reservations...",
     "validation": {
         "email": "Please enter a valid email."
     },
     "results": {
-        "title": "Found {count, plural, =0 {no reservations} =1 {# reservation} other {# reservations}} for",
+        "title": "Found {count, plural, =0 {no reservations} =1 {# reservation} other {# reservations}} for you",
         "bookedOn": "Booked on {date}",
         "guests": "{count, plural, =1 {# guest} other {# guests}}",
         "reservationFor": "Reservation for {datetime}",
-        "notFound": "No reservations found for this email address."
+        "notFound": "No reservations found for your user."
     }
   },
   "LoginPage": {
@@ -101,9 +101,10 @@
   },
   "AdminLayout": {
     "title": "Admin Dashboard",
-    "description": "Manage your restaurant's reservations and tables.",
+    "description": "Manage your restaurant's operations.",
     "reservations": "Reservations",
-    "tables": "Tables"
+    "tables": "Tables",
+    "users": "Users"
   },
   "AdminReservationPage": {
     "cardTitle": "All Reservations",
@@ -133,8 +134,8 @@
     }
   },
   "AdminTablePage": {
-    "cardTitle": "Manage Tables",
-    "cardDescription": "Add, edit, or remove restaurant tables.",
+    "cardTitle": "Table Management",
+    "cardDescription": "Visual overview of the restaurant floor.",
     "addTable": "Add Table",
     "tableHead": {
         "name": "Name",
@@ -143,7 +144,9 @@
     },
     "actions": {
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "markCleaning": "Mark as Cleaning",
+        "markAvailable": "Mark as Available"
     },
     "noTables": "No tables configured. Add one to get started.",
     "deleteDialog": {
@@ -151,7 +154,18 @@
         "description": "This action cannot be undone. This will permanently delete the table named \"{name}\".",
         "cancel": "Cancel",
         "confirm": "Delete"
+    },
+    "tableCard": {
+        "capacity": "Capacity: {capacity}",
+        "customer": "Customer: {name}",
+        "noCustomer": "No customer assigned"
     }
+  },
+  "AdminUserPage": {
+    "title": "User Management",
+    "description": "Assign roles to staff members using a secure script.",
+    "cardTitle": "How to Assign Roles",
+    "cardDescription": "User roles (admin, receptionist, waiter) must be set using the Firebase Admin SDK from a trusted server environment. Refer to the project's README.md file for a detailed guide and a sample script to manage user roles securely."
   },
   "TableDialog": {
     "editTitle": "Edit Table",
@@ -166,6 +180,7 @@
     "available": "Available",
     "occupied": "Occupied",
     "reserved": "Reserved",
+    "cleaning": "Cleaning",
     "cancel": "Cancel",
     "save": "Save",
     "validation": {
@@ -189,7 +204,11 @@
     "Confirmed": "Confirmed",
     "Seated": "Seated",
     "Completed": "Completed",
-    "Cancelled": "Cancelled"
+    "Cancelled": "Cancelled",
+    "Available": "Available",
+    "Occupied": "Occupied",
+    "Reserved": "Reserved",
+    "Cleaning": "Cleaning"
   },
   "Metadata": {
     "title": "Reservas Email",

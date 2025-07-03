@@ -30,7 +30,7 @@ import { useTranslations } from "next-intl";
 export const TableSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
   capacity: z.coerce.number().min(1, "Capacity must be at least 1."),
-  status: z.enum(["Available", "Occupied", "Reserved"]),
+  status: z.enum(["Available", "Occupied", "Reserved", "Cleaning"]),
 });
 
 type TableDialogProps = {
@@ -48,7 +48,7 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
         z.object({
             name: z.string().min(3, t('validation.name')),
             capacity: z.coerce.number().min(1, t('validation.capacity')),
-            status: z.enum(["Available", "Occupied", "Reserved"]),
+            status: z.enum(["Available", "Occupied", "Reserved", "Cleaning"]),
         })
     ),
     defaultValues: {
@@ -128,6 +128,7 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
                       <SelectItem value="Available">{t('available')}</SelectItem>
                       <SelectItem value="Occupied">{t('occupied')}</SelectItem>
                       <SelectItem value="Reserved">{t('reserved')}</SelectItem>
+                      <SelectItem value="Cleaning">{t('cleaning')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

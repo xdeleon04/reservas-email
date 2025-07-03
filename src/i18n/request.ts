@@ -1,7 +1,15 @@
-import {getRequestConfig} from 'next-intl/server';
- 
-export default getRequestConfig(async ({locale}) => {
-  // The middleware already ensures that the locale is valid.
+import { getRequestConfig } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+
+export default getRequestConfig(async ({
+  requestLocale
+}) => {
+  // This typically corresponds to the `[locale]` segment
+  let locale = await requestLocale;
+  if (!locale || !routing.locales.includes(locale as any)) {
+    locale = routing.defaultLocale;
+  }
+
   return {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default

@@ -16,6 +16,7 @@ import { TableDialog, TableSchema } from "@/components/TableDialog";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   CardFooter,

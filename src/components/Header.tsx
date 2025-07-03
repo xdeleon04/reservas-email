@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Utensils, Menu, LogOut, Globe, Sun, Moon, Monitor } from "lucide-react";
+import { Gem, Menu, LogOut, Globe, Sun, Moon, Monitor } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -72,18 +72,24 @@ export function Header() {
     )
   };
 
+  const Logo = ({isMobile = false}: {isMobile?: boolean}) => (
+    <Link
+        href="/"
+        className="flex items-center gap-3"
+        onClick={() => setIsSheetOpen(false)}
+    >
+        <Gem className={cn("text-primary", isMobile ? "h-7 w-7" : "h-8 w-8")} />
+        <div className="grid gap-0">
+            <span className={cn("font-headline font-bold leading-none text-foreground", isMobile ? "text-lg" : "text-xl")}>{t('logoTop')}</span>
+            <span className={cn("font-headline leading-none text-muted-foreground", isMobile ? "text-base" : "text-lg")}>{t('logoBottom')}</span>
+        </div>
+    </Link>
+  )
+
   return (
     <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center p-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-2xl font-bold font-headline text-primary"
-          onClick={() => setIsSheetOpen(false)}
-        >
-          <Utensils className="h-7 w-7" />
-          <span>{t('title')}</span>
-        </Link>
-
+        <Logo />
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
@@ -127,15 +133,8 @@ export function Header() {
               <SheetHeader>
                 <SheetTitle className="sr-only">{t('menu')}</SheetTitle>
               </SheetHeader>
-              <div className="flex justify-between items-center mb-8">
-                <Link
-                  href="/"
-                  className="flex items-center gap-2 text-xl font-bold font-headline text-primary"
-                  onClick={() => setIsSheetOpen(false)}
-                >
-                  <Utensils className="h-6 w-6" />
-                  <span>{t('title')}</span>
-                </Link>
+              <div className="mb-8">
+                <Logo isMobile={true}/>
               </div>
               <nav className="flex flex-col items-start gap-4">
                 {navLinks.map((link) => (

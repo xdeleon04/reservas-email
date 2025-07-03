@@ -1,7 +1,8 @@
 
 {
   "Header": {
-    "title": "Reservas Email",
+    "logoTop": "Reservas",
+    "logoBottom": "Email",
     "reserve": "Reserve",
     "review": "Review",
     "admin": "Admin",

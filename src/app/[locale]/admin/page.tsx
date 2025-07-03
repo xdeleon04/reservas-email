@@ -31,7 +31,7 @@ import {
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, doc, query, orderBy, Timestamp, writeBatch, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, query, orderBy, Timestamp, deleteDoc } from "firebase/firestore";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +47,12 @@ import { ConfirmReservationDialog } from "@/components/ConfirmReservationDialog"
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "@/i18n/navigation";
+import {
+    confirmReservation,
+    seatGuests,
+    completeReservation,
+    cancelReservation
+} from "@/actions/reservations";
 
 type Reservation = {
   id: string;
@@ -117,24 +123,7 @@ export default function AdminReservationPage() {
   }, []);
   
   const handleCancelReservation = async (reservation: Reservation) => {
-    const batch = writeBatch(db);
-    const resRef = doc(db, "reservations", reservation.id);
-    
-    batch.update(resRef, { 
-        status: "Cancelled",
-        assignedTableId: null,
-        assignedTableName: null
-    });
-
-    if (reservation.assignedTableId) {
-        const tableRef = doc(db, "tables", reservation.assignedTableId);
-        batch.update(tableRef, { 
-            status: "Available",
-            customerName: null,
-            reservationId: null
-        });
-    }
-    await batch.commit();
+    await cancelReservation(reservation.id, reservation.assignedTableId || null);
   };
 
   const handleConfirmClick = (reservation: Reservation) => {
@@ -143,54 +132,20 @@ export default function AdminReservationPage() {
   };
 
   const handleConfirmSave = async (reservation: Reservation, table: TableType) => {
-      const batch = writeBatch(db);
-
-      const resRef = doc(db, "reservations", reservation.id);
-      batch.update(resRef, { 
-          status: "Confirmed",
-          assignedTableId: table.id,
-          assignedTableName: table.name,
-       });
-
-      const tableRef = doc(db, "tables", table.id);
-      batch.update(tableRef, { 
-          status: "Reserved",
-          customerName: reservation.name,
-          reservationId: reservation.id,
-      });
-
-      await batch.commit();
+      await confirmReservation(reservation.id, reservation.name, table);
       setIsConfirmDialogOpen(false);
       setReservationToConfirm(null);
   }
 
   const handleSeatGuests = async (reservation: Reservation) => {
     if (reservation.assignedTableId) {
-        const batch = writeBatch(db);
-        const resRef = doc(db, "reservations", reservation.id);
-        batch.update(resRef, { status: "Seated" });
-
-        const tableRef = doc(db, "tables", reservation.assignedTableId);
-        batch.update(tableRef, { status: "Occupied" });
-
-        await batch.commit();
+        await seatGuests(reservation.id, reservation.assignedTableId);
     }
   };
 
   const handleCompleteReservation = async (reservation: Reservation) => {
       if (reservation.assignedTableId) {
-          const batch = writeBatch(db);
-          const resRef = doc(db, "reservations", reservation.id);
-          batch.update(resRef, { status: "Completed" });
-
-          const tableRef = doc(db, "tables", reservation.assignedTableId);
-          batch.update(tableRef, { 
-            status: "Available",
-            customerName: null,
-            reservationId: null
-          });
-
-          await batch.commit();
+          await completeReservation(reservation.id, reservation.assignedTableId);
       }
   };
   
@@ -201,6 +156,8 @@ export default function AdminReservationPage() {
   
   const handleDeleteConfirm = async () => {
     if (reservationToDelete) {
+      // Deleting a reservation doesn't affect tables, so this can remain a client-side action
+      // for authorized users (admin/receptionist) as defined in the rules.
       await deleteDoc(doc(db, "reservations", reservationToDelete.id));
     }
     setIsDeleteDialogOpen(false);

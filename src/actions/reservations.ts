@@ -2,6 +2,8 @@
 'use server'
 
 import admin from '@/lib/firebase-admin';
+import { revalidatePath } from 'next/cache';
+import type { Table } from '@/app/[locale]/admin/tables/page';
 
 export type ReservationReview = {
   id: string;
@@ -42,5 +44,111 @@ export async function getReservationsByEmail(email: string): Promise<Reservation
     } catch (error) {
         console.error("Error fetching reservations by email:", error);
         return [];
+    }
+}
+
+// Result type for actions
+type ActionResult = { success: boolean, error?: string };
+
+// New server actions
+export async function confirmReservation(reservationId: string, reservationName: string, table: Table): Promise<ActionResult> {
+    try {
+        const batch = admin.firestore().batch();
+
+        const resRef = admin.firestore().collection('reservations').doc(reservationId);
+        batch.update(resRef, { 
+            status: "Confirmed",
+            assignedTableId: table.id,
+            assignedTableName: table.name,
+        });
+
+        const tableRef = admin.firestore().collection('tables').doc(table.id);
+        batch.update(tableRef, { 
+            status: "Reserved",
+            customerName: reservationName,
+            reservationId: reservationId,
+        });
+
+        await batch.commit();
+        revalidatePath('/admin');
+        revalidatePath('/admin/tables');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error confirming reservation:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function seatGuests(reservationId: string, tableId: string): Promise<ActionResult> {
+    try {
+        const batch = admin.firestore().batch();
+        
+        const resRef = admin.firestore().collection('reservations').doc(reservationId);
+        batch.update(resRef, { status: "Seated" });
+
+        const tableRef = admin.firestore().collection('tables').doc(tableId);
+        batch.update(tableRef, { status: "Occupied" });
+
+        await batch.commit();
+        revalidatePath('/admin');
+        revalidatePath('/admin/tables');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error seating guests:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function completeReservation(reservationId: string, tableId: string): Promise<ActionResult> {
+    try {
+        const batch = admin.firestore().batch();
+        
+        const resRef = admin.firestore().collection('reservations').doc(reservationId);
+        batch.update(resRef, { status: "Completed" });
+
+        const tableRef = admin.firestore().collection('tables').doc(tableId);
+        batch.update(tableRef, {
+            status: "Cleaning", // Change status to Cleaning
+            customerName: null,
+            reservationId: null
+        });
+
+        await batch.commit();
+        revalidatePath('/admin');
+        revalidatePath('/admin/tables');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error completing reservation:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function cancelReservation(reservationId: string, tableId: string | null): Promise<ActionResult> {
+    try {
+        const batch = admin.firestore().batch();
+
+        const resRef = admin.firestore().collection('reservations').doc(reservationId);
+        batch.update(resRef, { 
+            status: "Cancelled",
+            assignedTableId: null,
+            assignedTableName: null
+        });
+
+        if (tableId) {
+            const tableRef = admin.firestore().collection('tables').doc(tableId);
+            batch.update(tableRef, { 
+                status: "Available",
+                customerName: null,
+                reservationId: null
+            });
+        }
+        
+        await batch.commit();
+        revalidatePath('/admin');
+        revalidatePath('/admin/tables');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error cancelling reservation:", error);
+        return { success: false, error: error.message };
     }
 }

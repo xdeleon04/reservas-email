@@ -1,35 +1,7 @@
 
-import { Header } from "@/components/Header";
-import { ReservationForm } from "@/components/ReservationForm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { redirect } from 'next/navigation';
 
-export default function Home() {
-  return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <Header />
-      <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <div className="w-full max-w-2xl">
-          <Card className="shadow-2xl animate-fade-in-up">
-            <CardHeader className="text-center p-8">
-              <CardTitle className="text-3xl md:text-4xl font-headline tracking-tight">
-                Book Your Table
-              </CardTitle>
-              <CardDescription className="text-lg pt-2">
-                Experience exquisite dining with a simple reservation.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-8 pb-8">
-              <ReservationForm />
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    </div>
-  );
+export default function RootPage() {
+  // The middleware will handle rewriting this to the default locale
+  redirect('/');
 }

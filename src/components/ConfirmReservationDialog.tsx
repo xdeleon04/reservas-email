@@ -19,15 +19,15 @@ import {
 } from "./ui/select";
 import { Label } from "./ui/label";
 import { useState, useMemo } from "react";
-import type { Table } from "@/app/admin/tables/page";
+import type { Table } from "@/app/[locale]/admin/tables/page";
 import type { Timestamp } from "firebase/firestore";
+import { useTranslations } from "next-intl";
 
-// Using a broader type to accommodate what's passed from the admin page.
 type Reservation = {
   id: string;
   name: string;
   guests: number;
-  [key: string]: any; // Allow other properties
+  [key: string]: any; 
 };
 
 type ConfirmReservationDialogProps = {
@@ -45,6 +45,7 @@ export function ConfirmReservationDialog({
   reservation,
   tables,
 }: ConfirmReservationDialogProps) {
+  const t = useTranslations('ConfirmReservationDialog');
   const [selectedTableId, setSelectedTableId] = useState<string>("");
 
   const availableTables = useMemo(() => {
@@ -65,31 +66,31 @@ export function ConfirmReservationDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Confirm Reservation</DialogTitle>
+          <DialogTitle className="font-headline">{t('title')}</DialogTitle>
           <DialogDescription>
-            Assign an available table to confirm the reservation for {reservation.name}.
+            {t('description', {name: reservation.name})}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
             <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Guests:</span>
+                <span className="text-sm font-medium">{t('guests')}</span>
                 <span className="text-sm">{reservation.guests}</span>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="table-select">Assign Table</Label>
+                <Label htmlFor="table-select">{t('assignTable')}</Label>
                 <Select onValueChange={setSelectedTableId} value={selectedTableId}>
                     <SelectTrigger id="table-select">
-                        <SelectValue placeholder="Select an available table" />
+                        <SelectValue placeholder={t('selectPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                         {availableTables.length > 0 ? (
                             availableTables.map((table) => (
                                 <SelectItem key={table.id} value={table.id}>
-                                    {table.name} (Capacity: {table.capacity})
+                                    {t('tableInfo', {name: table.name, capacity: table.capacity})}
                                 </SelectItem>
                             ))
                         ) : (
-                            <div className="px-2 py-1.5 text-sm text-muted-foreground">No available tables fit.</div>
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">{t('noTables')}</div>
                         )}
                     </SelectContent>
                 </Select>
@@ -97,10 +98,10 @@ export function ConfirmReservationDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!selectedTableId}>
-            Confirm & Assign
+            {t('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

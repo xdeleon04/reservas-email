@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next-intl/navigation";
 import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
@@ -45,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         setIsLoading(false);
       } else {
-        // If no user is signed in (e.g. after logout or on first visit), sign in anonymously
         signInAnonymously(auth).catch((error) => {
             console.error("Anonymous sign in failed:", error);
             setIsLoading(false);
@@ -57,15 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, pass: string) => {
-    setIsLoading(true);
+    //setIsLoading(true); // This causes a flash on failed login
     try {
         await signInWithEmailAndPassword(auth, email, pass);
-        router.push("/admin");
-        return null; // Success
+        // Let the calling component handle routing on success
+        return null; 
     } catch (error) {
         return error; // Return error object to the form
-    } finally {
-        setIsLoading(false);
     }
   };
 

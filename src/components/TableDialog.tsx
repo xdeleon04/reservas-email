@@ -24,7 +24,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import type { Table } from "@/app/admin/tables/page";
+import type { Table } from "@/app/[locale]/admin/tables/page";
+import { useTranslations } from "next-intl";
 
 export const TableSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
@@ -40,8 +41,16 @@ type TableDialogProps = {
 };
 
 export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogProps) {
+  const t = useTranslations('TableDialog');
+  
   const form = useForm<z.infer<typeof TableSchema>>({
-    resolver: zodResolver(TableSchema),
+    resolver: zodResolver(
+        z.object({
+            name: z.string().min(3, t('validation.name')),
+            capacity: z.coerce.number().min(1, t('validation.capacity')),
+            status: z.enum(["Available", "Occupied", "Reserved"]),
+        })
+    ),
     defaultValues: {
       name: "",
       capacity: 1,
@@ -66,9 +75,9 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">{table ? "Edit Table" : "Add New Table"}</DialogTitle>
+          <DialogTitle className="font-headline">{table ? t('editTitle') : t('addTitle')}</DialogTitle>
           <DialogDescription>
-            {table ? "Update the details for this table." : "Enter the details for the new table."}
+            {table ? t('editDescription') : t('addDescription')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -82,9 +91,9 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Table Name</FormLabel>
+                  <FormLabel>{t('name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Window Seat 1" {...field} />
+                    <Input placeholder={t('namePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -95,7 +104,7 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
               name="capacity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Capacity</FormLabel>
+                  <FormLabel>{t('capacity')}</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="4" {...field} />
                   </FormControl>
@@ -108,17 +117,17 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>{t('status')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('selectStatus')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Available">Available</SelectItem>
-                      <SelectItem value="Occupied">Occupied</SelectItem>
-                      <SelectItem value="Reserved">Reserved</SelectItem>
+                      <SelectItem value="Available">{t('available')}</SelectItem>
+                      <SelectItem value="Occupied">{t('occupied')}</SelectItem>
+                      <SelectItem value="Reserved">{t('reserved')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -129,10 +138,10 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
         </Form>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button type="submit" form="table-form">
-            Save
+            {t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

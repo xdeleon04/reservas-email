@@ -1,0 +1,45 @@
+
+import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/toaster";
+import "../globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import {NextIntlClientProvider} from 'next-intl';
+import {getMessages} from 'next-intl/server';
+import {getTranslator} from 'next-intl/server';
+
+export async function generateMetadata({params: {locale}}: {params: {locale: string}}): Promise<Metadata> {
+  const t = await getTranslator(locale, 'Metadata');
+ 
+  return {
+    title: t('title'),
+    description: t('description')
+  };
+}
+
+export default async function LocaleLayout({
+  children,
+  params: {locale}
+}: Readonly<{
+  children: React.ReactNode;
+  params: {locale: string};
+}>) {
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-body antialiased">
+        <NextIntlClientProvider messages={messages}>
+            <AuthProvider>
+                {children}
+            </AuthProvider>
+            <Toaster />
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}

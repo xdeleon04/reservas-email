@@ -1,10 +1,10 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "next-intl/link";
 import { Button } from "@/components/ui/button";
-import { Utensils, Menu, LogOut } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Utensils, Menu, LogOut, Globe } from "lucide-react";
+import { usePathname, useRouter } from "next-intl/navigation";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -13,19 +13,34 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLocale, useTranslations } from "next-intl";
 
 export function Header() {
+  const t = useTranslations('Header');
   const pathname = usePathname();
+  const router = useRouter();
+  const locale = useLocale();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { user, logout } = useAuth();
 
   const navLinks = [
-    { href: "/", label: "Reserve" },
-    { href: "/review", label: "Review" },
-    { href: "/admin", label: "Admin" },
+    { href: "/", label: t('reserve') },
+    { href: "/review", label: t('review') },
+    { href: "/admin", label: t('admin') },
   ];
+
+  const handleLocaleChange = (nextLocale: string) => {
+    router.replace(pathname, { locale: nextLocale });
+    setIsSheetOpen(false);
+  };
 
   const NavLink = ({ href, label }: { href: string; label: string }) => {
     const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
@@ -53,18 +68,34 @@ export function Header() {
           onClick={() => setIsSheetOpen(false)}
         >
           <Utensils className="h-7 w-7" />
-          <span>Reservas Email</span>
+          <span>{t('title')}</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Globe className="h-5 w-5" />
+                <span className="sr-only">{t('language')}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => handleLocaleChange('en')} disabled={locale === 'en'}>
+                {t('english')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleLocaleChange('es')} disabled={locale === 'es'}>
+                {t('spanish')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {user && !user.isAnonymous && (
-            <Button variant="ghost" size="icon" onClick={() => logout()} title="Logout">
+            <Button variant="ghost" size="icon" onClick={logout} title={t('logout')}>
               <LogOut className="h-5 w-5" />
-              <span className="sr-only">Logout</span>
+              <span className="sr-only">{t('logout')}</span>
             </Button>
           )}
         </nav>
@@ -75,12 +106,12 @@ export function Header() {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[240px]">
               <SheetHeader>
-                <SheetTitle className="sr-only">Menu</SheetTitle>
+                <SheetTitle className="sr-only">{t('menu')}</SheetTitle>
               </SheetHeader>
               <div className="flex justify-between items-center mb-8">
                 <Link
@@ -89,7 +120,7 @@ export function Header() {
                   onClick={() => setIsSheetOpen(false)}
                 >
                   <Utensils className="h-6 w-6" />
-                  <span>Reservas Email</span>
+                  <span>{t('title')}</span>
                 </Link>
               </div>
               <nav className="flex flex-col items-start gap-4">
@@ -99,9 +130,14 @@ export function Header() {
                  {user && !user.isAnonymous && (
                     <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setIsSheetOpen(false); }}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        Logout
+                        {t('logout')}
                     </Button>
                 )}
+                <div className="pt-4 w-full">
+                    <p className="text-sm text-muted-foreground px-4 pb-2">{t('language')}</p>
+                    <Button variant={locale === 'en' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleLocaleChange('en')}>{t('english')}</Button>
+                    <Button variant={locale === 'es' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleLocaleChange('es')}>{t('spanish')}</Button>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

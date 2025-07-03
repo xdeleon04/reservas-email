@@ -22,9 +22,10 @@ import { Badge } from "./ui/badge";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 const reviewSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
+  email: z.string().email(),
 });
 
 type Reservation = {
@@ -37,6 +38,8 @@ type Reservation = {
 };
 
 export function ReviewForm() {
+  const t = useTranslations('ReviewForm');
+  const tStatus = useTranslations('Statuses');
   const [isLoading, setIsLoading] = useState(false);
   const [reservations, setReservations] = useState<Reservation[] | null>(null);
   const [searchedEmail, setSearchedEmail] = useState<string | null>(null);
@@ -86,9 +89,9 @@ export function ReviewForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email Address</FormLabel>
+                <FormLabel>{t('email')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com" {...field} />
+                  <Input placeholder={t('emailPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -96,7 +99,7 @@ export function ReviewForm() {
           />
           <Button type="submit" className="w-full" disabled={isLoading || !user}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Find Reservations
+            {isLoading ? t('submitting') : t('submit')}
           </Button>
         </form>
       </Form>
@@ -104,7 +107,7 @@ export function ReviewForm() {
       {isLoading && (
         <div className="text-center text-muted-foreground flex items-center justify-center">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Searching for reservations...
+            {t('submitting')}
         </div>
       )}
 
@@ -112,7 +115,7 @@ export function ReviewForm() {
         <div>
           <Separator className="my-6" />
           <h2 className="text-xl font-headline mb-4 text-center">
-            Found {reservations.length} reservation(s) for{" "}
+            {t('results.title', {count: reservations.length})}{" "}
             <span className="font-bold text-primary">{searchedEmail}</span>
           </h2>
           {reservations.length > 0 ? (
@@ -121,7 +124,7 @@ export function ReviewForm() {
                 <Card key={res.id} className="bg-background">
                   <CardHeader>
                     <CardTitle className="flex justify-between items-center text-base">
-                        <span>Booked on {formatTimestamp(res.createdAt).split(',')[0]}</span>
+                        <span>{t('results.bookedOn', {date: formatTimestamp(res.createdAt).split(',')[0]})}</span>
                         <Badge variant={
                                 res.status === 'Confirmed' || res.status === 'Seated' ? 'default' 
                                 : res.status === 'Cancelled' ? 'destructive' 
@@ -130,20 +133,20 @@ export function ReviewForm() {
                             }
                             className="text-sm"
                         >
-                            {res.status}
+                            {tStatus(res.status)}
                         </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-muted-foreground space-y-2">
-                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> Reservation for {formatTimestamp(res.reservationTime)}</p>
-                     <p className="flex items-center"><Users className="mr-2 h-4 w-4"/> {res.guests} guest(s)</p>
+                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> {t('results.reservationFor', {datetime: formatTimestamp(res.reservationTime)})}</p>
+                     <p className="flex items-center"><Users className="mr-2 h-4 w-4"/> {t('results.guests', {count: res.guests})}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : (
             <p className="text-center text-muted-foreground mt-4">
-              No reservations found for this email address.
+              {t('results.notFound')}
             </p>
           )}
         </div>

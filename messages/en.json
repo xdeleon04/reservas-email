@@ -1,0 +1,192 @@
+
+{
+  "Header": {
+    "title": "Reservas Email",
+    "reserve": "Reserve",
+    "review": "Review",
+    "admin": "Admin",
+    "logout": "Logout",
+    "language": "Language",
+    "english": "English",
+    "spanish": "Español",
+    "openMenu": "Open menu",
+    "menu": "Menu"
+  },
+  "HomePage": {
+    "title": "Book Your Table",
+    "description": "Experience exquisite dining with a simple reservation."
+  },
+  "ReservationForm": {
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "email": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "guests": "Number of Guests",
+    "guestsPlaceholder": "2",
+    "date": "Date",
+    "pickDate": "Pick a date",
+    "time": "Time",
+    "submit": "Reserve Your Table",
+    "submitting": "Booking...",
+    "validation": {
+      "name": "Name must be at least 2 characters.",
+      "email": "Please enter a valid email address.",
+      "guests": "Please specify at least 1 guest.",
+      "date": "A date is required.",
+      "time": "Please enter a valid time."
+    },
+    "toast": {
+        "authErrorTitle": "Authentication Error",
+        "authErrorDescription": "Could not identify user. Please refresh and try again.",
+        "successTitle": "Reservation submitted!",
+        "successDescription": "Your booking is pending confirmation. You will be redirected shortly.",
+        "failTitle": "Booking Failed",
+        "failDescription": "Could not save your reservation. Please try again."
+    }
+  },
+  "ReservationConfirmationPage": {
+    "loading": "Loading...",
+    "title": "Reservation Submitted!",
+    "description": "Your booking is pending. A final confirmation will be sent to your email.",
+    "detailsTitle": "Your Reservation Details:",
+    "name": "Name:",
+    "guests": "Guests:",
+    "email": "Email:",
+    "dateTime": "Date & Time:",
+    "guestDefault": "Guest",
+    "noEmail": "No email provided",
+    "notSpecified": "Not specified"
+  },
+  "ReviewPage": {
+    "title": "Review Your Reservation",
+    "description": "Enter your email address to find your bookings."
+  },
+  "ReviewForm": {
+    "email": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Find Reservations",
+    "submitting": "Searching for reservations...",
+    "validation": {
+        "email": "Please enter a valid email."
+    },
+    "results": {
+        "title": "Found {count, plural, =0 {no reservations} =1 {# reservation} other {# reservations}} for",
+        "bookedOn": "Booked on {date}",
+        "guests": "{count, plural, =1 {# guest} other {# guests}}",
+        "reservationFor": "Reservation for {datetime}",
+        "notFound": "No reservations found for this email address."
+    }
+  },
+  "LoginPage": {
+    "title": "Admin Login",
+    "description": "Enter credentials to access the dashboard.",
+    "email": "Email",
+    "emailPlaceholder": "admin@example.com",
+    "password": "Password",
+    "submit": "Log In",
+    "toast": {
+        "title": "Login Failed",
+        "invalidEmail": "Invalid email address format.",
+        "userDisabled": "This user account has been disabled.",
+        "invalidCredential": "Invalid email or password.",
+        "unknownError": "An unknown error occurred. Please try again.",
+        "checkCredentials": "Login failed. Please check your credentials."
+    }
+  },
+  "AdminLayout": {
+    "title": "Admin Dashboard",
+    "description": "Manage your restaurant's reservations and tables.",
+    "reservations": "Reservations",
+    "tables": "Tables"
+  },
+  "AdminReservationPage": {
+    "cardTitle": "All Reservations",
+    "cardDescription": "View and manage all customer bookings.",
+    "tableHead": {
+        "customer": "Customer",
+        "guests": "Guests",
+        "dateTime": "Reservation Date & Time",
+        "table": "Assigned Table",
+        "status": "Status"
+    },
+    "actions": {
+        "label": "Actions",
+        "toggleMenu": "Toggle menu",
+        "confirm": "Confirm",
+        "seat": "Seat Guests",
+        "complete": "Mark as Completed",
+        "cancel": "Cancel",
+        "delete": "Delete"
+    },
+    "noReservations": "No reservations found.",
+    "deleteDialog": {
+        "title": "Are you absolutely sure?",
+        "description": "This action cannot be undone. This will permanently delete the reservation for {name} on {datetime}.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+    }
+  },
+  "AdminTablePage": {
+    "cardTitle": "Manage Tables",
+    "cardDescription": "Add, edit, or remove restaurant tables.",
+    "addTable": "Add Table",
+    "tableHead": {
+        "name": "Name",
+        "capacity": "Capacity",
+        "status": "Status"
+    },
+    "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+    },
+    "noTables": "No tables configured. Add one to get started.",
+    "deleteDialog": {
+        "title": "Are you absolutely sure?",
+        "description": "This action cannot be undone. This will permanently delete the table named \"{name}\".",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+    }
+  },
+  "TableDialog": {
+    "editTitle": "Edit Table",
+    "addTitle": "Add New Table",
+    "editDescription": "Update the details for this table.",
+    "addDescription": "Enter the details for the new table.",
+    "name": "Table Name",
+    "namePlaceholder": "e.g. Window Seat 1",
+    "capacity": "Capacity",
+    "status": "Status",
+    "selectStatus": "Select status",
+    "available": "Available",
+    "occupied": "Occupied",
+    "reserved": "Reserved",
+    "cancel": "Cancel",
+    "save": "Save",
+    "validation": {
+        "name": "Name must be at least 3 characters.",
+        "capacity": "Capacity must be at least 1."
+    }
+  },
+  "ConfirmReservationDialog": {
+    "title": "Confirm Reservation",
+    "description": "Assign an available table to confirm the reservation for {name}.",
+    "guests": "Guests:",
+    "assignTable": "Assign Table",
+    "selectPlaceholder": "Select an available table",
+    "tableInfo": "{name} (Capacity: {capacity})",
+    "noTables": "No available tables fit.",
+    "cancel": "Cancel",
+    "confirm": "Confirm & Assign"
+  },
+  "Statuses": {
+    "Pending": "Pending",
+    "Confirmed": "Confirmed",
+    "Seated": "Seated",
+    "Completed": "Completed",
+    "Cancelled": "Cancelled"
+  },
+  "Metadata": {
+    "title": "Reservas Email",
+    "description": "Effortless table reservations."
+  }
+}

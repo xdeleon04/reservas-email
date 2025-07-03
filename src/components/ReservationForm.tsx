@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -25,28 +24,31 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-
-const reservationSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  guests: z.coerce.number().min(1, { message: "Please specify at least 1 guest."}),
-  date: z.date({
-    required_error: "A date is required.",
-  }),
-  time: z.string({
-    required_error: "Please select a preferred time.",
-  }).regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Please enter a valid time." }),
-});
+import { useTranslations } from "next-intl";
+import { useRouter } from "next-intl/navigation";
 
 export function ReservationForm() {
+  const t = useTranslations('ReservationForm');
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+
+  const reservationSchema = z.object({
+    name: z.string().min(2, {
+      message: t('validation.name'),
+    }),
+    email: z.string().email({
+      message: t('validation.email'),
+    }),
+    guests: z.coerce.number().min(1, { message: t('validation.guests')}),
+    date: z.date({
+      required_error: t('validation.date'),
+    }),
+    time: z.string({
+      required_error: t('validation.time'),
+    }).regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: t('validation.time') }),
+  });
 
   const form = useForm<z.infer<typeof reservationSchema>>({
     resolver: zodResolver(reservationSchema),
@@ -62,8 +64,8 @@ export function ReservationForm() {
     if (!user) {
       toast({
           variant: "destructive",
-          title: "Authentication Error",
-          description: "Could not identify user. Please refresh and try again.",
+          title: t('toast.authErrorTitle'),
+          description: t('toast.authErrorDescription'),
       });
       return;
     }
@@ -82,8 +84,8 @@ export function ReservationForm() {
       });
       
       toast({
-          title: "Reservation submitted!",
-          description: "Your booking is pending confirmation. You will be redirected shortly.",
+          title: t('toast.successTitle'),
+          description: t('toast.successDescription'),
       });
 
       const queryParams = new URLSearchParams({
@@ -98,8 +100,8 @@ export function ReservationForm() {
         console.error("Error adding reservation: ", error);
         toast({
             variant: "destructive",
-            title: "Booking Failed",
-            description: "Could not save your reservation. Please try again.",
+            title: t('toast.failTitle'),
+            description: t('toast.failDescription'),
         });
         setIsSubmitting(false);
     }
@@ -114,9 +116,9 @@ export function ReservationForm() {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel>{t('fullName')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder={t('fullNamePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -127,9 +129,9 @@ export function ReservationForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email Address</FormLabel>
+                <FormLabel>{t('email')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com" {...field} />
+                  <Input placeholder={t('emailPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,9 +143,9 @@ export function ReservationForm() {
             name="guests"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Number of Guests</FormLabel>
+                <FormLabel>{t('guests')}</FormLabel>
                 <FormControl>
-                    <Input type="number" placeholder="2" {...field} min="1"/>
+                    <Input type="number" placeholder={t('guestsPlaceholder')} {...field} min="1"/>
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -155,7 +157,7 @@ export function ReservationForm() {
             name="date"
             render={({ field }) => (
                 <FormItem className="flex flex-col">
-                <FormLabel>Date</FormLabel>
+                <FormLabel>{t('date')}</FormLabel>
                 <Popover>
                     <PopoverTrigger asChild>
                     <FormControl>
@@ -169,7 +171,7 @@ export function ReservationForm() {
                         {field.value ? (
                             format(field.value, "PPP")
                         ) : (
-                            <span>Pick a date</span>
+                            <span>{t('pickDate')}</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -196,7 +198,7 @@ export function ReservationForm() {
             name="time"
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Time</FormLabel>
+                    <FormLabel>{t('time')}</FormLabel>
                     <FormControl>
                         <Input type="time" {...field} />
                     </FormControl>
@@ -207,7 +209,7 @@ export function ReservationForm() {
         </div>
         <Button type="submit" className="w-full" disabled={isSubmitting || !user}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isSubmitting ? "Booking..." : "Reserve Your Table"}
+          {isSubmitting ? t('submitting') : t('submit')}
         </Button>
       </form>
     </Form>

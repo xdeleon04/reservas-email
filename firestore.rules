@@ -4,33 +4,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Function to check if the user is an admin.
-    // For this app, we identify the admin by a specific email.
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'admin@example.com';
+      // In a production app, use custom claims for security.
+      // For this example, we identify the admin by their email.
+      return request.auth.token.email == 'admin@example.com';
     }
 
-    // Admins can manage the 'tables' collection.
-    match /tables/{tableId} {
-      allow read, write: if isAdmin();
-    }
-
-    // Rules for the 'reservations' collection.
+    // Rules for the 'reservations' collection
     match /reservations/{reservationId} {
-      // Admins have full access to all reservations.
+      // Admins can perform any action on any reservation.
       allow read, write: if isAdmin();
       
-      // Authenticated users (including anonymous) can create a reservation for themselves.
-      allow create: if request.auth.uid == request.resource.data.uid;
+      // Authenticated (including anonymous) users can create their own reservations.
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
       
-      // Users can get their own specific reservation document.
-      allow get: if resource.data.uid == request.auth.uid;
+      // Users can only read their own reservations.
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
     }
-    
-    // This separate rule allows a user to LIST their own reservations for the /review page.
-    // It is more restrictive than a general 'list' and checks the query itself.
-    match /reservations/{document=**} {
-      allow list: if request.auth.uid == request.query.where.uid;
+
+    // Rules for the 'tables' collection
+    match /tables/{tableId} {
+      // Only admins can read or write tables.
+      allow read, write: if isAdmin();
     }
   }
 }

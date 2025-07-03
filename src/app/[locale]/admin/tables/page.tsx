@@ -82,25 +82,33 @@ export default function AdminTablePage() {
       });
       setTables(tablesData);
       setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching tables:", error);
+        setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "reservations"),
-      where("status", "in", ["Confirmed", "Seated"])
-    );
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const resData: Reservation[] = [];
-      querySnapshot.forEach((doc) => {
-        resData.push({ id: doc.id, ...doc.data() } as Reservation);
-      });
-      setReservations(resData);
-    });
-    return () => unsubscribe();
-  }, []);
+    // Only fetch reservations if the user is staff, as this query will fail for anonymous users.
+    if (user && !user.isAnonymous) {
+        const q = query(
+        collection(db, "reservations"),
+        where("status", "in", ["Confirmed", "Seated"])
+        );
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const resData: Reservation[] = [];
+        querySnapshot.forEach((doc) => {
+            resData.push({ id: doc.id, ...doc.data() } as Reservation);
+        });
+        setReservations(resData);
+        }, (error) => {
+            console.error("Error fetching reservations for table view:", error);
+        });
+        return () => unsubscribe();
+    }
+  }, [user]);
 
   const reservationsByTableId = useMemo(() => {
     return reservations.reduce((acc, res) => {
@@ -218,14 +226,14 @@ export default function AdminTablePage() {
                                 onClick={() => handleUpdateStatus(table, "Cleaning")}
                                 disabled={table.status !== "Occupied"}
                               >
-                                <Brush className="mr-2" /> {t("actions.markCleaning")}
+                                <Brush className="mr-2 h-4 w-4" /> {t("actions.markCleaning")}
                               </Button>
                               <Button
                                 variant="outline"
                                 onClick={() => handleUpdateStatus(table, "Available")}
                                 disabled={table.status !== "Cleaning"}
                               >
-                                <Sparkles className="mr-2" /> {t("actions.markAvailable")}
+                                <Sparkles className="mr-2 h-4 w-4" /> {t("actions.markAvailable")}
                               </Button>
                             </>
                           )}
@@ -235,17 +243,17 @@ export default function AdminTablePage() {
                             <>
                               <Button
                                 variant="outline"
-                                onClick={() => setIsDialogOpen(true)}
-                                disabled={table.status === 'Available' || table.status === 'Cleaning'}
+                                onClick={() => handleUpdateStatus(table, "Cleaning")}
+                                disabled={table.status !== "Occupied"}
                               >
-                                <Brush className="mr-2" /> {t("actions.markCleaning")}
+                                <Brush className="mr-2 h-4 w-4" /> {t("actions.markCleaning")}
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() => handleUpdateStatus(table, 'Available')}
-                                disabled={table.status !== 'Cleaning' && table.status !== 'Completed' && table.status !== 'Occupied'}
+                                onClick={() => handleUpdateStatus(table, "Available")}
+                                disabled={table.status !== "Cleaning"}
                               >
-                                <Sparkles className="mr-2" /> {t("actions.markAvailable")}
+                                <Sparkles className="mr-2 h-4 w-4" /> {t("actions.markAvailable")}
                               </Button>
                             </>
                           )}

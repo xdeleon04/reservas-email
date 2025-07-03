@@ -1,39 +1,65 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isOneOfRoles(roles) {
-      return request.auth.uid != null && request.auth.token.role in roles;
+    
+    // Helper Functions
+    function getRole() {
+      return request.auth.token.role;
     }
-
-    function isOwner(email) {
-      return request.auth.uid != null && request.auth.token.email == email;
+    function isSignedIn() {
+      return request.auth != null;
     }
-
-    match /reservations/{reservationId} {
+    function isOwner(res) {
+      // For users reviewing their own reservations via email.
+      return isSignedIn() && request.auth.token.email == res.data.email;
+    }
+    
+    // Reservations
+    match /reservations/{resId} {
       // Anyone can create a reservation.
-      allow create: if true;
-
-      // Admins/receptionists can read all. Waiters can read confirmed/seated ones.
-      // A signed-in user can read their own reservations.
-      allow read: if isOneOfRoles(['admin', 'receptionist']) ||
-                     (isOneOfRoles(['waiter']) && resource.data.status in ['Confirmed', 'Seated']) ||
-                     isOwner(resource.data.email);
-
-      // Only admins/receptionists can modify reservations.
-      allow update, delete: if isOneOfRoles(['admin', 'receptionist']);
+      allow create: if isSignedIn();
+      
+      // Read permissions are layered.
+      allow read: if 
+        // Admins and Receptionists can read all reservations.
+        getRole() in ['admin', 'receptionist'] ||
+        // Customers can read their own reservations (for the review page).
+        isOwner(resource) ||
+        // Waiters can read Confirmed/Seated reservations (for the tables page).
+        (getRole() == 'waiter' && resource.data.status in ['Confirmed', 'Seated']);
+        
+      // Write permissions are restricted.
+      allow update, delete: if getRole() in ['admin', 'receptionist'];
     }
 
+    // Tables
     match /tables/{tableId} {
       // All staff can read tables.
-      allow read: if isOneOfRoles(['admin', 'receptionist', 'waiter']);
-
-      // Only admins can create or delete tables.
-      allow create, delete: if isOneOfRoles(['admin']);
+      allow read: if getRole() in ['admin', 'receptionist', 'waiter'];
       
-      // All staff can update tables (e.g., status). UI restricts specific actions.
-      allow update: if isOneOfRoles(['admin', 'receptionist', 'waiter']);
+      // Only Admin can create/delete tables.
+      allow create, delete: if getRole() == 'admin';
+
+      // Update permissions are role-specific.
+      allow update: if 
+        // Admin and Receptionist have broad update permissions.
+        getRole() in ['admin', 'receptionist'] ||
+        // Waiters can only perform specific status updates.
+        (
+          getRole() == 'waiter' &&
+          request.resource.data.keys().hasOnly(['status']) &&
+          (
+            (resource.data.status == 'Occupied' && request.resource.data.status == 'Cleaning') ||
+            (resource.data.status == 'Cleaning' && request.resource.data.status == 'Available')
+          )
+        );
+    }
+
+    // Users - No direct client access. Must be managed via server-side actions.
+    match /users/{userId} {
+      allow read, write: if false;
     }
   }
 }

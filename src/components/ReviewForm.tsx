@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Loader2, Clock } from "lucide-react";
+import { Loader2, Clock, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
@@ -33,6 +33,7 @@ type Reservation = {
   reservationTime: Timestamp;
   createdAt: Timestamp;
   status: "Confirmed" | "Pending" | "Cancelled";
+  guests: number;
 };
 
 export function ReviewForm() {
@@ -130,6 +131,7 @@ export function ReviewForm() {
                   </CardHeader>
                   <CardContent className="text-muted-foreground space-y-2">
                      <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> Reservation for {formatTimestamp(res.reservationTime)}</p>
+                     <p className="flex items-center"><Users className="mr-2 h-4 w-4"/> {res.guests} guest(s)</p>
                   </CardContent>
                 </Card>
               ))}

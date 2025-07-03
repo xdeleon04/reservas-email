@@ -25,11 +25,12 @@ import {
   XCircle,
   Trash2,
   Loader2,
+  Users,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, updateDoc, deleteDoc, doc, query, orderBy, Timestamp } from "firebase/firestore";
+import { collection, onSnapshot, doc, query, orderBy, Timestamp, writeBatch, deleteDoc } from "firebase/firestore";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,21 +41,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { Table as TableType } from "@/app/admin/tables/page";
+import { ConfirmReservationDialog } from "@/components/ConfirmReservationDialog";
 
 type Reservation = {
   id: string;
   name: string;
   email: string;
+  guests: number;
   reservationTime: Timestamp;
   createdAt: Timestamp;
   status: "Pending" | "Confirmed" | "Cancelled";
+  assignedTableId?: string;
+  assignedTableName?: string;
 };
 
 export default function AdminReservationPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [tables, setTables] = useState<TableType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reservationToDelete, setReservationToDelete] = useState<Reservation | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [reservationToConfirm, setReservationToConfirm] = useState<Reservation | null>(null);
 
   useEffect(() => {
     const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
@@ -70,10 +79,59 @@ export default function AdminReservationPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleStatusChange = async (id: string, status: Reservation["status"]) => {
-    const resRef = doc(db, "reservations", id);
-    await updateDoc(resRef, { status });
+  useEffect(() => {
+    const q = query(collection(db, "tables"), orderBy("name"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const tablesData: TableType[] = [];
+        querySnapshot.forEach((doc) => {
+            tablesData.push({ id: doc.id, ...doc.data() } as TableType);
+        });
+        setTables(tablesData);
+    });
+    return () => unsubscribe();
+  }, []);
+  
+  const handleCancelReservation = async (reservation: Reservation) => {
+    const batch = writeBatch(db);
+    const resRef = doc(db, "reservations", reservation.id);
+    
+    // Update reservation status and remove table assignment
+    batch.update(resRef, { 
+        status: "Cancelled",
+        assignedTableId: null,
+        assignedTableName: null
+    });
+
+    // If a table was assigned, make it available again
+    if (reservation.assignedTableId) {
+        const tableRef = doc(db, "tables", reservation.assignedTableId);
+        batch.update(tableRef, { status: "Available" });
+    }
+    await batch.commit();
   };
+
+  const handleConfirmClick = (reservation: Reservation) => {
+    setReservationToConfirm(reservation);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const handleConfirmSave = async (reservation: Reservation, table: TableType) => {
+      const batch = writeBatch(db);
+
+      const resRef = doc(db, "reservations", reservation.id);
+      batch.update(resRef, { 
+          status: "Confirmed",
+          assignedTableId: table.id,
+          assignedTableName: table.name,
+       });
+
+      const tableRef = doc(db, "tables", table.id);
+      batch.update(tableRef, { status: "Reserved" });
+
+      await batch.commit();
+      setIsConfirmDialogOpen(false);
+      setReservationToConfirm(null);
+  }
   
   const handleDeleteClick = (reservation: Reservation) => {
     setReservationToDelete(reservation);
@@ -117,9 +175,9 @@ export default function AdminReservationPage() {
               <TableHeader>
                   <TableRow>
                   <TableHead>Customer</TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead>Booked At</TableHead>
+                  <TableHead className="hidden sm:table-cell">Guests</TableHead>
                   <TableHead>Reservation Date &amp; Time</TableHead>
+                  <TableHead className="hidden md:table-cell">Assigned Table</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>
                       <span className="sr-only">Actions</span>
@@ -130,9 +188,9 @@ export default function AdminReservationPage() {
                   {reservations.map((res) => (
                   <TableRow key={res.id}>
                       <TableCell className="font-medium">{res.name}</TableCell>
-                      <TableCell className="hidden md:table-cell">{res.email}</TableCell>
-                      <TableCell>{formatTimestamp(res.createdAt)}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{res.guests}</TableCell>
                       <TableCell>{formatTimestamp(res.reservationTime)}</TableCell>
+                      <TableCell className="hidden md:table-cell">{res.assignedTableName || "N/A"}</TableCell>
                       <TableCell>
                           <Badge variant={statusVariant[res.status]}>{res.status}</Badge>
                       </TableCell>
@@ -146,11 +204,11 @@ export default function AdminReservationPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => handleStatusChange(res.id, "Confirmed")}>
+                          <DropdownMenuItem onSelect={() => handleConfirmClick(res)} disabled={res.status === 'Confirmed'}>
                               <CheckCircle className="mr-2 h-4 w-4" />
                               Confirm
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleStatusChange(res.id, "Cancelled")}>
+                          <DropdownMenuItem onSelect={() => handleCancelReservation(res)} disabled={res.status === 'Cancelled'}>
                               <XCircle className="mr-2 h-4 w-4" />
                               Cancel
                           </DropdownMenuItem>
@@ -171,6 +229,17 @@ export default function AdminReservationPage() {
               )}
           </CardContent>
       </Card>
+
+      {reservationToConfirm && (
+        <ConfirmReservationDialog
+            isOpen={isConfirmDialogOpen}
+            setIsOpen={setIsConfirmDialogOpen}
+            onSave={handleConfirmSave}
+            reservation={reservationToConfirm}
+            tables={tables}
+        />
+      )}
+
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

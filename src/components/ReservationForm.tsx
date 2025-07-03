@@ -15,13 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
@@ -40,18 +33,14 @@ const reservationSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  guests: z.coerce.number().min(1, { message: "Please specify at least 1 guest."}),
   date: z.date({
     required_error: "A date is required.",
   }),
   time: z.string({
     required_error: "Please select a preferred time.",
-  }),
+  }).regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Please enter a valid time." }),
 });
-
-const availableTimes = [
-  "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM",
-  "8:00 PM", "8:30 PM", "9:00 PM",
-];
 
 export function ReservationForm() {
   const router = useRouter();
@@ -64,6 +53,8 @@ export function ReservationForm() {
     defaultValues: {
       name: "",
       email: "",
+      guests: 1,
+      time: "18:00",
     },
   });
 
@@ -79,25 +70,12 @@ export function ReservationForm() {
 
     setIsSubmitting(true);
     try {
-      const [hourString, minutePart] = values.time.split(':');
-      const [minuteString, period] = minutePart.split(' ');
-      
-      let hours = parseInt(hourString, 10);
-      const minutes = parseInt(minuteString, 10);
-
-      if (period.toUpperCase() === 'PM' && hours < 12) {
-        hours += 12;
-      }
-      if (period.toUpperCase() === 'AM' && hours === 12) {
-        hours = 0; // Handle midnight
-      }
-
-      const reservationDateTime = new Date(values.date);
-      reservationDateTime.setHours(hours, minutes, 0, 0);
+      const reservationDateTime = new Date(`${format(values.date, "yyyy-MM-dd")}T${values.time}`);
 
       const docRef = await addDoc(collection(db, "reservations"), {
         name: values.name,
         email: values.email.toLowerCase(),
+        guests: values.guests,
         status: "Pending",
         createdAt: serverTimestamp(),
         reservationTime: reservationDateTime,
@@ -112,6 +90,7 @@ export function ReservationForm() {
         name: values.name,
         email: values.email,
         time: reservationDateTime.toISOString(),
+        guests: values.guests.toString(),
       });
 
       router.push(`/reservation/${docRef.id}?${queryParams.toString()}`);
@@ -129,31 +108,46 @@ export function ReservationForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input placeholder="you@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="John Doe" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="you@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+         <FormField
+            control={form.control}
+            name="guests"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Number of Guests</FormLabel>
+                <FormControl>
+                    <Input type="number" placeholder="2" {...field} min="1"/>
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
@@ -168,7 +162,7 @@ export function ReservationForm() {
                         <Button
                         variant={"outline"}
                         className={cn(
-                            "w-full pl-3 text-left font-normal",
+                            "w-full justify-start text-left font-normal",
                             !field.value && "text-muted-foreground"
                         )}
                         >
@@ -202,22 +196,11 @@ export function ReservationForm() {
             name="time"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Preferred Time</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Time</FormLabel>
                     <FormControl>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select a time slot" />
-                    </SelectTrigger>
+                        <Input type="time" {...field} />
                     </FormControl>
-                    <SelectContent>
-                    {availableTimes.map((time) => (
-                        <SelectItem key={time} value={time}>
-                        {time}
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-                <FormMessage />
+                    <FormMessage />
                 </FormItem>
             )}
             />

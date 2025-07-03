@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Mail, User, Clock } from "lucide-react";
+import { CheckCircle, Mail, User, Clock, Users } from "lucide-react";
 import { useSearchParams, useParams } from 'next/navigation'
 import { Suspense } from 'react'
 
@@ -18,6 +18,7 @@ function ReservationDetails() {
     const name = searchParams.get('name') || "Guest";
     const email = searchParams.get('email') || "No email provided";
     const timeISO = searchParams.get('time')
+    const guests = searchParams.get('guests') || "1";
     const dateTime = timeISO ? new Date(timeISO).toLocaleString() : "Not specified";
     
     return (
@@ -30,6 +31,11 @@ function ReservationDetails() {
                 <span className="font-medium text-foreground">Name:</span>
                 <span className="ml-auto">{name}</span>
             </div>
+             <div className="flex items-center">
+                <Users className="mr-3 h-4 w-4 flex-shrink-0" />
+                <span className="font-medium text-foreground">Guests:</span>
+                <span className="ml-auto">{guests}</span>
+            </div>
             <div className="flex items-center">
                 <Mail className="mr-3 h-4 w-4 flex-shrink-0" />
                 <span className="font-medium text-foreground">Email:</span>
@@ -37,7 +43,7 @@ function ReservationDetails() {
             </div>
             <div className="flex items-center">
                 <Clock className="mr-3 h-4 w-4 flex-shrink-0" />
-                <span className="font-medium text-foreground">Date &amp; Time:</span>
+                <span className="font-medium text-foreground">Date & Time:</span>
                 <span className="ml-auto">{dateTime}</span>
             </div>
         </div>

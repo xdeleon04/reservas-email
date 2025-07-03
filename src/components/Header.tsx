@@ -61,7 +61,7 @@ export function Header() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
-          {user && (
+          {user && !user.isAnonymous && (
             <Button variant="ghost" size="icon" onClick={() => logout()} title="Logout">
               <LogOut className="h-5 w-5" />
               <span className="sr-only">Logout</span>
@@ -96,7 +96,7 @@ export function Header() {
                 {navLinks.map((link) => (
                   <NavLink key={link.href} {...link} />
                 ))}
-                 {user && (
+                 {user && !user.isAnonymous && (
                     <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setIsSheetOpen(false); }}>
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout

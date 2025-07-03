@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Loader2, Clock, Hash } from "lucide-react";
+import { Loader2, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
@@ -47,11 +47,6 @@ export function ReviewForm() {
   });
 
   async function onSubmit(values: z.infer<typeof reviewSchema>) {
-    if (!user) {
-        // This case should be rare, as anonymous auth should always provide a user.
-        // You could show a toast message here if desired.
-        return;
-    }
     setIsLoading(true);
     setReservations(null);
     setSearchedEmail(values.email);
@@ -135,7 +130,6 @@ export function ReviewForm() {
                   </CardHeader>
                   <CardContent className="text-muted-foreground space-y-2">
                      <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> Reservation for {res.time}</p>
-                     <p className="flex items-center"><Hash className="mr-2 h-4 w-4"/> Booking ID: {res.id}</p>
                   </CardContent>
                 </Card>
               ))}

@@ -126,16 +126,16 @@ export default function AdminReservationPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleStatusChange(res.id, "Confirmed")}>
+                        <DropdownMenuItem onSelect={() => handleStatusChange(res.id, "Confirmed")}>
                             <CheckCircle className="mr-2 h-4 w-4" />
                             Confirm
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatusChange(res.id, "Cancelled")}>
+                        <DropdownMenuItem onSelect={() => handleStatusChange(res.id, "Cancelled")}>
                             <XCircle className="mr-2 h-4 w-4" />
                             Cancel
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(res.id)}>
+                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onSelect={() => handleDelete(res.id)}>
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                         </DropdownMenuItem>

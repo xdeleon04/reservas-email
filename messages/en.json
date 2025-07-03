@@ -99,6 +99,11 @@
         "invalidCredential": "Invalid email or password.",
         "unknownError": "An unknown error occurred. Please try again.",
         "checkCredentials": "Login failed. Please check your credentials."
+    },
+    "unapprovedDialog": {
+      "title": "Account Pending Approval",
+      "description": "Your account has been created, but you cannot log in until an administrator assigns you a role. Please contact your manager.",
+      "confirm": "OK"
     }
   },
   "SignupPage": {

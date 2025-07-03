@@ -99,6 +99,11 @@
         "invalidCredential": "Correo electrónico o contraseña inválidos.",
         "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo.",
         "checkCredentials": "Acceso fallido. Por favor, revisa tus credenciales."
+    },
+    "unapprovedDialog": {
+      "title": "Cuenta Pendiente de Aprobación",
+      "description": "Tu cuenta ha sido creada, pero no puedes iniciar sesión hasta que un administrador te asigne un rol. Por favor, contacta a tu gerente.",
+      "confirm": "Aceptar"
     }
   },
   "SignupPage": {

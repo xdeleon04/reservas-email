@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 
 type UserRole = 'admin' | 'receptionist' | 'waiter' | null;
 
-type User = {
+export type User = {
   email: string | null;
   uid: string;
   isAnonymous: boolean;
@@ -20,7 +20,7 @@ type User = {
 
 type AuthContextType = {
   user: User | null;
-  login: (email: string, pass: string) => Promise<any>;
+  login: (email: string, pass: string) => Promise<{ user: User | null, error: any }>;
   signup: (email: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
   isLoading: boolean;
@@ -70,10 +70,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, pass: string) => {
     try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        return null; 
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const firebaseUser = userCredential.user;
+        // Force refresh the token to get the latest custom claims.
+        const idTokenResult = await firebaseUser.getIdTokenResult(true); 
+        const role = (idTokenResult.claims.role as UserRole) | null;
+        
+        const appUser: User = {
+            email: firebaseUser.email,
+            uid: firebaseUser.uid,
+            isAnonymous: firebaseUser.isAnonymous,
+            role: role,
+            isAdmin: role === 'admin',
+            isReceptionist: role === 'receptionist',
+            isWaiter: role === 'waiter'
+        };
+
+        // The onAuthStateChanged listener will also update the global state,
+        // but returning the user here allows for immediate action in the component.
+        return { user: appUser, error: null };
     } catch (error) {
-        return error;
+        return { user: null, error: error };
     }
   };
 

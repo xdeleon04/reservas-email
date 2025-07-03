@@ -29,6 +29,14 @@ import { Loader2 } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -37,9 +45,10 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const t = useTranslations("LoginPage");
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUnapprovedDialogOpen, setIsUnapprovedDialogOpen] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -71,84 +80,114 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsSubmitting(true);
-    const error = await login(values.email, values.password);
+    const { user: loggedInUser, error } = await login(values.email, values.password);
+    
     if (error) {
       toast({
         variant: "destructive",
         title: t('toast.title'),
         description: getFirebaseErrorMessage(error),
       });
-    } else {
-        router.push("/admin");
+      setIsSubmitting(false);
+      return;
     }
-    setIsSubmitting(false);
+
+    if (loggedInUser && !loggedInUser.isAnonymous) {
+      const isStaff = loggedInUser.isAdmin || loggedInUser.isReceptionist || loggedInUser.isWaiter;
+      if (isStaff) {
+          router.push("/admin");
+      } else {
+          setIsUnapprovedDialogOpen(true);
+      }
+    } else {
+      setIsSubmitting(false);
+    }
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <Header />
-      <main className="flex-grow flex items-center justify-center p-4">
-        <Card className="w-full max-w-sm shadow-lg animate-fade-in-up">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-headline">{t('title')}</CardTitle>
-            <CardDescription>
-              {t('description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('email')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder={t('emailPlaceholder')}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('password')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {t('submit')}
-                </Button>
-              </form>
-            </Form>
-             <div className="mt-4 text-center text-sm">
-              {t('noAccount')}{" "}
-              <Link href="/signup" className="underline font-medium text-primary">
-                {t('createAccount')}
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+    <>
+      <div className="flex flex-col min-h-screen bg-background">
+        <Header />
+        <main className="flex-grow flex items-center justify-center p-4">
+          <Card className="w-full max-w-sm shadow-lg animate-fade-in-up">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-headline">{t('title')}</CardTitle>
+              <CardDescription>
+                {t('description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('email')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder={t('emailPlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {t('submit')}
+                  </Button>
+                </form>
+              </Form>
+              <div className="mt-4 text-center text-sm">
+                {t('noAccount')}{" "}
+                <Link href="/signup" className="underline font-medium text-primary">
+                  {t('createAccount')}
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+      <AlertDialog open={isUnapprovedDialogOpen} onOpenChange={setIsUnapprovedDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>{t('unapprovedDialog.title')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                    {t('unapprovedDialog.description')}
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogAction onClick={() => {
+                    logout();
+                    setIsUnapprovedDialogOpen(false);
+                    setIsSubmitting(false);
+                }}>{t('unapprovedDialog.confirm')}</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

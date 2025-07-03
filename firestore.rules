@@ -3,65 +3,61 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
+  
     function isStaff() {
-      return isSignedIn() && request.auth.token.role in ['admin', 'receptionist', 'waiter'];
+      return request.auth.token.role in ['admin', 'receptionist', 'waiter'];
     }
-
+    
     function isAdmin() {
-      return isSignedIn() && request.auth.token.role == 'admin';
+      return request.auth.token.role == 'admin';
     }
-
+    
     function isReceptionist() {
-        return isSignedIn() && request.auth.token.role == 'receptionist';
+      return request.auth.token.role == 'receptionist';
     }
-
+    
     function isWaiter() {
-        return isSignedIn() && request.auth.token.role == 'waiter';
-    }
-    
-    function isAdminOrReceptionist() {
-      return isAdmin() || isReceptionist();
+      return request.auth.token.role == 'waiter';
     }
 
-    // Reservations
     match /reservations/{reservationId} {
-      // Allow anonymous users to create reservations
-      allow create: if request.resource.data.email == request.auth.token.email || request.auth.token.email == null;
+      // Allow authenticated users (including anonymous) to create reservations.
+      allow create: if request.auth != null;
 
-      // Allow admins and receptionists to read/write all reservations
-      allow read, update, delete: if isAdminOrReceptionist();
-      
-      // Allow waiters to read reservations that are Confirmed or Seated for their queries.
-      // Note: This rule is broad for list queries. More specific access is handled by the UI.
-      allow read: if isWaiter();
-      
-      // Allow any authenticated user to read their own reservations
-      allow read: if isSignedIn() && resource.data.email == request.auth.token.email;
+      // Admins and Receptionists can read all reservations.
+      // Waiters can read reservations that are in an active or recently-completed state
+      // to prevent snapshot listeners from breaking when status changes.
+      allow read: if isAdmin() || isReceptionist() || 
+                     (isWaiter() && resource.data.status in ['Confirmed', 'Seated', 'Completed', 'Cancelled']);
+
+      // Admins and Receptionists can update reservations.
+      // Waiters can only mark a 'Seated' reservation as 'Completed' and can only change the status.
+      allow update: if isAdmin() || isReceptionist() || 
+                       (
+                         isWaiter() && 
+                         request.resource.data.status == 'Completed' &&
+                         resource.data.status == 'Seated' &&
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                       );
+                       
+      // Only admins can delete.
+      allow delete: if isAdmin();
     }
-    
-    // Tables
+
     match /tables/{tableId} {
-      // Allow any staff member to read table data
+      // All staff members can read tables.
       allow read: if isStaff();
-      
-      // Allow admins to create/delete tables
+
+      // Only admins can create and delete tables.
       allow create, delete: if isAdmin();
       
-      // Allow admins to update all fields.
-      // Allow receptionists & waiters to only update the 'status' field.
-      allow update: if isAdmin() || 
-                     ((isReceptionist() || isWaiter()) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
-    }
-    
-    // Users collection - no client access
-    match /users/{userId} {
-      allow read, write: if false;
+      // Admins can update anything.
+      // Receptionists/Waiters can only update the 'status' field.
+      allow update: if isAdmin() ||
+                       (
+                         (isReceptionist() || isWaiter()) &&
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                       );
     }
   }
 }

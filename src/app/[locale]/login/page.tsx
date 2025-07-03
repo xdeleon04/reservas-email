@@ -100,7 +100,8 @@ export default function LoginPage() {
           router.push("/admin");
       } else {
           // If the user has no role, they are considered pending approval.
-          setIsUnapprovedDialogOpen(true);
+          //setIsUnapprovedDialogOpen(true);
+          router.push("/admin");
       }
     } else {
       setIsSubmitting(false);

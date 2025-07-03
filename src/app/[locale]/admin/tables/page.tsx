@@ -32,7 +32,6 @@ import {
   doc,
   query,
   orderBy,
-  writeBatch,
 } from "firebase/firestore";
 import {
   AlertDialog,
@@ -47,6 +46,11 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import { 
+    markTableAsCleaning, 
+    markTableAsAvailable, 
+    markTableAsOccupied 
+} from "@/actions/tables";
 
 export type Table = z.infer<typeof TableSchema> & {
   id: string;
@@ -114,6 +118,7 @@ export default function AdminTablePage() {
   };
 
   const handleSave = async (tableData: z.infer<typeof TableSchema>) => {
+    // This function is only for admins, via the dialog.
     if (editingTable) {
       const tableRef = doc(db, "tables", editingTable.id);
       await updateDoc(tableRef, tableData);
@@ -121,46 +126,20 @@ export default function AdminTablePage() {
       await addDoc(collection(db, "tables"), tableData);
     }
   };
+  
+  // Action handlers that call secure server actions
+  const handleMarkCleaning = async (table: Table) => {
+    await markTableAsCleaning(table.id, table.reservationId);
+  };
 
-  const handleUpdateStatus = async (
-    table: Table,
-    status: Table["status"]
-  ) => {
-    const tableRef = doc(db, "tables", table.id);
+  const handleMarkAvailable = async (table: Table) => {
+    // This action works for tables that were 'Cleaning' or were 'Occupied' by a walk-in.
+    await markTableAsAvailable(table.id);
+  };
 
-    // Flow: Occupied (with reservation) -> Cleaning -> Available
-    if (status === "Cleaning" && table.status === "Occupied") {
-      const batch = writeBatch(db);
-      batch.update(tableRef, { status: "Cleaning" });
-
-      // Mark the associated reservation as 'Completed'
-      if (table.reservationId) {
-        const resRef = doc(db, "reservations", table.reservationId);
-        batch.update(resRef, { status: "Completed" });
-      }
-      await batch.commit();
-      return;
-    }
-
-    if (status === "Available" && table.status === "Cleaning") {
-      await updateDoc(tableRef, {
-        status: "Available",
-        customerName: null,
-        reservationId: null,
-      });
-      return;
-    }
-
-    // Flow: Walk-in customer
-    if (status === "Occupied" && table.status === "Available") {
-      await updateDoc(tableRef, { status: "Occupied", customerName: tCard('walkInCustomer') });
-      return;
-    }
-     // A walk-in has left, no reservation to update.
-    if (status === "Available" && table.status === "Occupied" && !table.reservationId) {
-         await updateDoc(tableRef, { status: "Available", customerName: null, reservationId: null });
-         return;
-    }
+  const handleMarkOccupied = async (table: Table) => {
+    // This action is for walk-in customers.
+    await markTableAsOccupied(table.id, tCard('walkInCustomer'));
   };
 
   const statusVariant = {
@@ -228,9 +207,7 @@ export default function AdminTablePage() {
                             <>
                               <Button
                                 variant="outline"
-                                onClick={() =>
-                                  handleUpdateStatus(table, "Cleaning")
-                                }
+                                onClick={() => handleMarkCleaning(table)}
                                 disabled={table.status !== "Occupied"}
                               >
                                 <Brush className="mr-2 h-4 w-4" />{" "}
@@ -238,9 +215,7 @@ export default function AdminTablePage() {
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() =>
-                                  handleUpdateStatus(table, "Available")
-                                }
+                                onClick={() => handleMarkAvailable(table)}
                                 disabled={table.status !== "Cleaning"}
                               >
                                 <Sparkles className="mr-2 h-4 w-4" />{" "}
@@ -254,9 +229,7 @@ export default function AdminTablePage() {
                             <>
                               <Button
                                 variant="outline"
-                                onClick={() =>
-                                  handleUpdateStatus(table, "Occupied")
-                                }
+                                onClick={() => handleMarkOccupied(table)}
                                 disabled={table.status !== "Available"}
                               >
                                 <User className="mr-2 h-4 w-4" />{" "}
@@ -264,9 +237,7 @@ export default function AdminTablePage() {
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() =>
-                                  handleUpdateStatus(table, "Cleaning")
-                                }
+                                onClick={() => handleMarkCleaning(table)}
                                 disabled={table.status !== "Occupied"}
                               >
                                 <Brush className="mr-2 h-4 w-4" />{" "}
@@ -274,10 +245,8 @@ export default function AdminTablePage() {
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() =>
-                                  handleUpdateStatus(table, "Available")
-                                }
-                                disabled={table.status !== "Cleaning"}
+                                onClick={() => handleMarkAvailable(table)}
+                                disabled={table.status !== "Cleaning" && (table.status !== "Occupied" || !!table.reservationId)}
                               >
                                 <Sparkles className="mr-2 h-4 w-4" />{" "}
                                 {t("actions.markAvailable")}

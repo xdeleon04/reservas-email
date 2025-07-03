@@ -1,59 +1,39 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper functions for auth checks
-    function isAuth() {
-      return request.auth != null;
-    }
-    
-    function isUser(uid) {
-      return isAuth() && request.auth.uid == uid;
-    }
-    
-    function getRole() {
-      return request.auth.token.role;
+    function isStaff() {
+      return request.auth.token.role in ['admin', 'receptionist', 'waiter'];
     }
     
     function isAdmin() {
-      return isAuth() && getRole() == 'admin';
+      return request.auth.token.role == 'admin';
     }
-    
+
     function isReceptionist() {
-      return isAuth() && getRole() == 'receptionist';
+      return request.auth.token.role == 'receptionist';
     }
-    
-    function isWaiter() {
-      return isAuth() && getRole() == 'waiter';
-    }
-    
+
     match /reservations/{reservationId} {
-      // ANY authenticated user (including anonymous) can create a reservation.
-      allow create: if isAuth();
-
-      // Admins and Receptionists can read and delete ANY reservation.
-      allow read, delete: if isAdmin() || isReceptionist();
+      // Let anyone create a reservation.
+      allow create: if true;
       
-      // A user can read their own reservation document.
-      // Used on the confirmation page after booking.
-      allow read: if isUser(resource.data.userId);
-      
-      // Allow Admins and Receptionists to update any reservation.
-      allow update: if isAdmin() || isReceptionist();
+      // Only admins and receptionists can read, update, or delete reservations directly.
+      // Waiters interact with reservations via secure server actions.
+      allow read, update, delete: if isAdmin() || isReceptionist();
     }
-
+    
     match /tables/{tableId} {
-      // Admins can do anything with tables.
-      allow write, delete: if isAdmin();
+      // Any staff member can read the table list.
+      allow read: if isStaff();
       
-      // All staff can read all tables.
-      allow read: if isAdmin() || isReceptionist() || isWaiter();
+      // Only Admins can create or delete tables.
+      allow create, delete: if isAdmin();
       
-      // Allow receptionists and waiters to update only specific fields for specific status transitions.
-      allow update: if (isAdmin() || isReceptionist() || isWaiter()) &&
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'customerName', 'reservationId']);
+      // Only admins can update tables directly from the client.
+      // Other roles (receptionist, waiter) MUST use the secure server actions.
+      allow update: if isAdmin();
     }
   }
 }

@@ -85,7 +85,19 @@
   },
   "LoginPage": {
     "title": "Acceso de Personal",
-    "description": "Introduce tus credenciales para acceder al panel."
+    "description": "Introduce tus credenciales para acceder al panel.",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "admin@ejemplo.com",
+    "password": "Contraseña",
+    "submit": "Iniciar Sesión",
+    "toast": {
+        "title": "Error de Acceso",
+        "invalidEmail": "Formato de correo electrónico inválido.",
+        "userDisabled": "Esta cuenta de usuario ha sido deshabilitada.",
+        "invalidCredential": "Correo electrónico o contraseña inválidos.",
+        "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo.",
+        "checkCredentials": "Acceso fallido. Por favor, revisa tus credenciales."
+    }
   },
   "AdminLayout": {
     "title": "Panel de Administración",

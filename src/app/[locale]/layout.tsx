@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import "../globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import {NextIntlClientProvider} from 'next-intl';
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export async function generateMetadata({params: {locale}}: {params: {locale: string}}): Promise<Metadata> {
   unstable_setRequestLocale(locale);
@@ -35,12 +36,19 @@ export default async function LocaleLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <NextIntlClientProvider messages={messages}>
-            <AuthProvider>
-                {children}
-            </AuthProvider>
-            <Toaster />
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+            <NextIntlClientProvider messages={messages}>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+                <Toaster />
+            </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

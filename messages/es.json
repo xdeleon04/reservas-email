@@ -10,7 +10,12 @@
     "english": "Inglés",
     "spanish": "Español",
     "openMenu": "Abrir menú",
-    "menu": "Menú"
+    "menu": "Menú",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "toggleTheme": "Alternar tema"
   },
   "HomePage": {
     "title": "Reserva tu Mesa",

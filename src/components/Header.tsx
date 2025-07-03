@@ -1,7 +1,8 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Utensils, Menu, LogOut, Globe } from "lucide-react";
+import { Utensils, Menu, LogOut, Globe, Sun, Moon, Monitor } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +21,8 @@ import {
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocale, useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   const t = useTranslations('Header');
@@ -28,6 +31,7 @@ export function Header() {
   const locale = useLocale();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const navLinks = [
     { href: "/", label: t('reserve') },
@@ -39,6 +43,11 @@ export function Header() {
     router.replace(pathname, { locale: nextLocale });
     setIsSheetOpen(false);
   };
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    setIsSheetOpen(false);
+  }
 
   const handleLogout = async () => {
     await logout();
@@ -80,6 +89,7 @@ export function Header() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
+          <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -141,6 +151,21 @@ export function Header() {
                     <p className="text-sm text-muted-foreground px-4 pb-2">{t('language')}</p>
                     <Button variant={locale === 'en' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleLocaleChange('en')}>{t('english')}</Button>
                     <Button variant={locale === 'es' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleLocaleChange('es')}>{t('spanish')}</Button>
+                </div>
+                <div className="pt-4 w-full">
+                    <p className="text-sm text-muted-foreground px-4 pb-2">{t('theme')}</p>
+                    <Button variant={theme === 'light' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleThemeChange('light')}>
+                        <Sun className="mr-2 h-4 w-4" />
+                        {t('light')}
+                    </Button>
+                    <Button variant={theme === 'dark' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleThemeChange('dark')}>
+                        <Moon className="mr-2 h-4 w-4" />
+                        {t('dark')}
+                    </Button>
+                    <Button variant={theme === 'system' ? 'secondary' : 'ghost'} className="w-full justify-start" onClick={() => handleThemeChange('system')}>
+                        <Monitor className="mr-2 h-4 w-4" />
+                        {t('system')}
+                    </Button>
                 </div>
               </nav>
             </SheetContent>

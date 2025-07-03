@@ -128,7 +128,11 @@ export default function AdminReservationPage() {
 
     if (reservation.assignedTableId) {
         const tableRef = doc(db, "tables", reservation.assignedTableId);
-        batch.update(tableRef, { status: "Available" });
+        batch.update(tableRef, { 
+            status: "Available",
+            customerName: null,
+            reservationId: null
+        });
     }
     await batch.commit();
   };
@@ -149,7 +153,11 @@ export default function AdminReservationPage() {
        });
 
       const tableRef = doc(db, "tables", table.id);
-      batch.update(tableRef, { status: "Reserved" });
+      batch.update(tableRef, { 
+          status: "Reserved",
+          customerName: reservation.name,
+          reservationId: reservation.id,
+      });
 
       await batch.commit();
       setIsConfirmDialogOpen(false);
@@ -176,7 +184,11 @@ export default function AdminReservationPage() {
           batch.update(resRef, { status: "Completed" });
 
           const tableRef = doc(db, "tables", reservation.assignedTableId);
-          batch.update(tableRef, { status: "Available" });
+          batch.update(tableRef, { 
+            status: "Available",
+            customerName: null,
+            reservationId: null
+          });
 
           await batch.commit();
       }

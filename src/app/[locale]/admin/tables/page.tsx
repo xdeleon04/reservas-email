@@ -11,7 +11,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { TableDialog, TableSchema } from "@/components/TableDialog";
 import {
   Card,
@@ -32,8 +32,6 @@ import {
   doc,
   query,
   orderBy,
-  where,
-  Timestamp,
   writeBatch,
 } from "firebase/firestore";
 import {
@@ -50,12 +48,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 
-export type Table = z.infer<typeof TableSchema> & { id: string };
-type Reservation = {
+export type Table = z.infer<typeof TableSchema> & {
   id: string;
-  name: string;
-  status: "Confirmed" | "Seated";
-  assignedTableId: string;
+  customerName?: string;
+  reservationId?: string;
 };
 
 export default function AdminTablePage() {
@@ -65,7 +61,6 @@ export default function AdminTablePage() {
   const { user } = useAuth();
 
   const [tables, setTables] = useState<Table[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | undefined>(
@@ -76,49 +71,24 @@ export default function AdminTablePage() {
 
   useEffect(() => {
     const q = query(collection(db, "tables"), orderBy("name"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const tablesData: Table[] = [];
-      querySnapshot.forEach((doc) => {
-        tablesData.push({ id: doc.id, ...doc.data() } as Table);
-      });
-      setTables(tablesData);
-      setIsLoading(false);
-    }, (error) => {
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const tablesData: Table[] = [];
+        querySnapshot.forEach((doc) => {
+          tablesData.push({ id: doc.id, ...doc.data() } as Table);
+        });
+        setTables(tablesData);
+        setIsLoading(false);
+      },
+      (error) => {
         console.error("Error fetching tables:", error);
         setIsLoading(false);
-    });
+      }
+    );
 
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    // Only fetch reservations if the user is staff, as this query will fail for anonymous users.
-    if (user && !user.isAnonymous) {
-        const q = query(
-        collection(db, "reservations"),
-        where("status", "in", ["Confirmed", "Seated"])
-        );
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const resData: Reservation[] = [];
-        querySnapshot.forEach((doc) => {
-            resData.push({ id: doc.id, ...doc.data() } as Reservation);
-        });
-        setReservations(resData);
-        }, (error) => {
-            console.error("Error fetching reservations for table view:", error);
-        });
-        return () => unsubscribe();
-    }
-  }, [user]);
-
-  const reservationsByTableId = useMemo(() => {
-    return reservations.reduce((acc, res) => {
-      if (res.assignedTableId) {
-        acc[res.assignedTableId] = res;
-      }
-      return acc;
-    }, {} as Record<string, Reservation>);
-  }, [reservations]);
 
   const handleAdd = () => {
     setEditingTable(undefined);
@@ -156,23 +126,40 @@ export default function AdminTablePage() {
     table: Table,
     status: Table["status"]
   ) => {
-    // If a table is being cleaned, the reservation is completed.
+    const tableRef = doc(db, "tables", table.id);
+
+    // Flow: Occupied (with reservation) -> Cleaning -> Available
     if (status === "Cleaning" && table.status === "Occupied") {
-      const reservation = reservationsByTableId[table.id];
       const batch = writeBatch(db);
-      
-      const tableRef = doc(db, "tables", table.id);
       batch.update(tableRef, { status: "Cleaning" });
 
-      if (reservation) {
-        const resRef = doc(db, "reservations", reservation.id);
+      // Mark the associated reservation as 'Completed'
+      if (table.reservationId) {
+        const resRef = doc(db, "reservations", table.reservationId);
         batch.update(resRef, { status: "Completed" });
       }
       await batch.commit();
-    } else {
-      // For other status updates (e.g. walk-ins, or marking available after cleaning)
-      const tableRef = doc(db, "tables", table.id);
-      await updateDoc(tableRef, { status });
+      return;
+    }
+
+    if (status === "Available" && table.status === "Cleaning") {
+      await updateDoc(tableRef, {
+        status: "Available",
+        customerName: null,
+        reservationId: null,
+      });
+      return;
+    }
+
+    // Flow: Walk-in customer
+    if (status === "Occupied" && table.status === "Available") {
+      await updateDoc(tableRef, { status: "Occupied", customerName: tCard('walkInCustomer') });
+      return;
+    }
+     // A walk-in has left, no reservation to update.
+    if (status === "Available" && table.status === "Occupied" && !table.reservationId) {
+         await updateDoc(tableRef, { status: "Available", customerName: null, reservationId: null });
+         return;
     }
   };
 
@@ -206,11 +193,12 @@ export default function AdminTablePage() {
           ) : (
             <>
               {tables.length === 0 ? (
-                 <p className="text-center p-8 text-muted-foreground">{t('noTables')}</p>
+                <p className="text-center p-8 text-muted-foreground">
+                  {t("noTables")}
+                </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {tables.map((table) => {
-                    const reservation = reservationsByTableId[table.id];
                     return (
                       <Card key={table.id} className="flex flex-col">
                         <CardHeader>
@@ -227,10 +215,10 @@ export default function AdminTablePage() {
                           </p>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <User className="mr-2 h-4 w-4" />
-                            {reservation ? (
-                                <span>{reservation.name}</span>
+                            {table.customerName ? (
+                              <span>{table.customerName}</span>
                             ) : (
-                                <span>{tCard('noCustomer')}</span>
+                              <span>{tCard("noCustomer")}</span>
                             )}
                           </div>
                         </CardContent>
@@ -240,44 +228,59 @@ export default function AdminTablePage() {
                             <>
                               <Button
                                 variant="outline"
-                                onClick={() => handleUpdateStatus(table, "Cleaning")}
+                                onClick={() =>
+                                  handleUpdateStatus(table, "Cleaning")
+                                }
                                 disabled={table.status !== "Occupied"}
                               >
-                                <Brush className="mr-2 h-4 w-4" /> {t("actions.markCleaning")}
+                                <Brush className="mr-2 h-4 w-4" />{" "}
+                                {t("actions.markCleaning")}
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() => handleUpdateStatus(table, "Available")}
+                                onClick={() =>
+                                  handleUpdateStatus(table, "Available")
+                                }
                                 disabled={table.status !== "Cleaning"}
                               >
-                                <Sparkles className="mr-2 h-4 w-4" /> {t("actions.markAvailable")}
+                                <Sparkles className="mr-2 h-4 w-4" />{" "}
+                                {t("actions.markAvailable")}
                               </Button>
                             </>
                           )}
 
                           {/* Receptionist Actions */}
-                           {user?.isReceptionist && (
+                          {user?.isReceptionist && (
                             <>
                               <Button
                                 variant="outline"
-                                onClick={() => handleUpdateStatus(table, "Occupied")}
+                                onClick={() =>
+                                  handleUpdateStatus(table, "Occupied")
+                                }
                                 disabled={table.status !== "Available"}
                               >
-                                <User className="mr-2 h-4 w-4" /> {t("actions.markOccupied")}
+                                <User className="mr-2 h-4 w-4" />{" "}
+                                {t("actions.markOccupied")}
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() => handleUpdateStatus(table, "Cleaning")}
+                                onClick={() =>
+                                  handleUpdateStatus(table, "Cleaning")
+                                }
                                 disabled={table.status !== "Occupied"}
                               >
-                                <Brush className="mr-2 h-4 w-4" /> {t("actions.markCleaning")}
+                                <Brush className="mr-2 h-4 w-4" />{" "}
+                                {t("actions.markCleaning")}
                               </Button>
                               <Button
                                 variant="outline"
-                                onClick={() => handleUpdateStatus(table, "Available")}
+                                onClick={() =>
+                                  handleUpdateStatus(table, "Available")
+                                }
                                 disabled={table.status !== "Cleaning"}
                               >
-                                <Sparkles className="mr-2 h-4 w-4" /> {t("actions.markAvailable")}
+                                <Sparkles className="mr-2 h-4 w-4" />{" "}
+                                {t("actions.markAvailable")}
                               </Button>
                             </>
                           )}
@@ -285,22 +288,22 @@ export default function AdminTablePage() {
                           {/* Admin Actions */}
                           {user?.isAdmin && (
                             <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => handleEdit(table)}
-                                    className="flex-grow"
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    onClick={() => handleDeleteClick(table)}
-                                    className="flex-grow"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEdit(table)}
+                                className="flex-grow"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => handleDeleteClick(table)}
+                                className="flex-grow"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           )}
                         </CardFooter>

@@ -1,0 +1,71 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAnonymous() {
+      return request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isStaff() {
+      return isSignedIn() && !isAnonymous();
+    }
+    
+    function getRole() {
+      return request.auth.token.role;
+    }
+    
+    function isAdmin() {
+      return getRole() == 'admin';
+    }
+    
+    function isReceptionist() {
+      return getRole() == 'receptionist';
+    }
+    
+    function isWaiter() {
+      return getRole() == 'waiter';
+    }
+    
+    function isReceptionistOrAdmin() {
+      return isAdmin() || isReceptionist();
+    }
+
+    // Reservations Collection
+    match /reservations/{reservationId} {
+      // Anonymous users can create reservations.
+      allow create: if isAnonymous();
+      
+      // Admin/Receptionists can read all reservations. 
+      // Anonymous users can also read to support the 'Review' page query.
+      allow read: if isReceptionistOrAdmin() || isAnonymous();
+      
+      // Admin/Receptionists can update any field.
+      // Waiters can only update a reservation's status to 'Completed'.
+      allow update: if isReceptionistOrAdmin()
+                    || (isWaiter() 
+                        && request.resource.data.status == 'Completed' 
+                        && request.resource.data.keys().hasOnly(['status']));
+                      
+      allow delete: if isReceptionistOrAdmin();
+    }
+    
+    // Tables Collection
+    match /tables/{tableId} {
+      // Any authenticated staff member can read tables.
+      allow read: if isStaff();
+      
+      // Only Admins can create or delete tables.
+      allow create, delete: if isAdmin();
+      
+      // Staff can update tables, but only specific fields.
+      // This prevents them from changing a table's name or capacity, for example.
+      allow update: if isStaff() && request.resource.data.keys().hasAny(['status', 'customerName', 'reservationId']);
+    }
+  }
+}

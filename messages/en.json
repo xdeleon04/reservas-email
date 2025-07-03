@@ -188,7 +188,8 @@
     "tableCard": {
         "capacity": "Capacity: {capacity}",
         "customer": "Customer: {name}",
-        "noCustomer": "No customer assigned"
+        "noCustomer": "No customer assigned",
+        "walkInCustomer": "Walk-in"
     }
   },
   "AdminUserPage": {

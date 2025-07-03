@@ -27,6 +27,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "@/context/AuthContext";
 
 const reservationSchema = z.object({
   name: z.string().min(2, {
@@ -49,6 +50,7 @@ export function ReservationForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof reservationSchema>>({
     resolver: zodResolver(reservationSchema),
@@ -59,10 +61,20 @@ export function ReservationForm() {
   });
 
   async function onSubmit(values: z.infer<typeof reservationSchema>) {
+    if (!user) {
+      toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Could not identify user. Please refresh and try again.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const docRef = await addDoc(collection(db, "reservations"), {
         ...values,
+        uid: user.uid,
         email: values.email.toLowerCase(),
         status: "Pending",
         createdAt: serverTimestamp(),
@@ -145,7 +157,7 @@ export function ReservationForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="w-full" disabled={isSubmitting || !user}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isSubmitting ? "Booking..." : "Reserve Your Table"}
         </Button>

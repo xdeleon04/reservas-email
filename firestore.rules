@@ -1,0 +1,33 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAdmin() {
+      // Admins are users who are authenticated but not anonymous.
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isOwner(uid) {
+      // The requesting user is the owner of the document.
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Rules for the 'tables' collection
+    match /tables/{tableId} {
+      // Only admins can read or write tables.
+      allow read, write: if isAdmin();
+    }
+
+    // Rules for the 'reservations' collection
+    match /reservations/{reservationId} {
+      // Admins can read any reservation.
+      // Owners can read their own reservation.
+      allow read: if isAdmin() || isOwner(resource.data.uid);
+
+      // Admins can update or delete any reservation.
+      // Owners can create a reservation for themselves.
+      allow write: if isAdmin() || (request.method == 'create' && isOwner(request.resource.data.uid));
+    }
+  }
+}

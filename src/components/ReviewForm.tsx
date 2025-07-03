@@ -21,6 +21,7 @@ import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
+import { useAuth } from "@/context/AuthContext";
 
 const reviewSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -38,6 +39,7 @@ export function ReviewForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [reservations, setReservations] = useState<Reservation[] | null>(null);
   const [searchedEmail, setSearchedEmail] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof reviewSchema>>({
     resolver: zodResolver(reviewSchema),
@@ -45,6 +47,11 @@ export function ReviewForm() {
   });
 
   async function onSubmit(values: z.infer<typeof reviewSchema>) {
+    if (!user) {
+        // This case should be rare, as anonymous auth should always provide a user.
+        // You could show a toast message here if desired.
+        return;
+    }
     setIsLoading(true);
     setReservations(null);
     setSearchedEmail(values.email);
@@ -53,6 +60,7 @@ export function ReviewForm() {
         const q = query(
             collection(db, "reservations"), 
             where("email", "==", values.email.toLowerCase()),
+            where("uid", "==", user.uid),
             orderBy("createdAt", "desc")
         );
         const querySnapshot = await getDocs(q);
@@ -91,7 +99,7 @@ export function ReviewForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading || !user}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Find Reservations
           </Button>

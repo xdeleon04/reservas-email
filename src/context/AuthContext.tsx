@@ -1,14 +1,16 @@
+
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 
 type User = {
   email: string | null;
   uid: string;
+  isAnonymous: boolean;
 };
 
 type AuthContextType = {
@@ -36,11 +38,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        setUser({ email: firebaseUser.email, uid: firebaseUser.uid });
+        setUser({
+            email: firebaseUser.email,
+            uid: firebaseUser.uid,
+            isAnonymous: firebaseUser.isAnonymous
+        });
+        setIsLoading(false);
       } else {
-        setUser(null);
+        // If no user is signed in (e.g. after logout or on first visit), sign in anonymously
+        signInAnonymously(auth).catch((error) => {
+            console.error("Anonymous sign in failed:", error);
+            setIsLoading(false);
+        });
       }
-      setIsLoading(false);
     });
 
     return () => unsubscribe();

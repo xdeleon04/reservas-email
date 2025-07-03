@@ -17,6 +17,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { z } from "zod";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export type Table = z.infer<typeof TableSchema> & { id: string };
 
@@ -25,6 +35,8 @@ export default function AdminTablePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | undefined>(undefined);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<Table | null>(null);
 
   useEffect(() => {
     const q = query(collection(db, "tables"), orderBy("name"));
@@ -49,11 +61,18 @@ export default function AdminTablePage() {
     setEditingTable(table);
     setIsDialogOpen(true);
   };
+  
+  const handleDeleteClick = (table: Table) => {
+    setTableToDelete(table);
+    setIsDeleteDialogOpen(true);
+  };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this table?")) {
-      await deleteDoc(doc(db, "tables", id));
+  const handleDeleteConfirm = async () => {
+    if (tableToDelete) {
+      await deleteDoc(doc(db, "tables", tableToDelete.id));
     }
+    setIsDeleteDialogOpen(false);
+    setTableToDelete(null);
   };
 
   const handleSave = async (tableData: z.infer<typeof TableSchema>) => {
@@ -115,7 +134,7 @@ export default function AdminTablePage() {
                                 variant="ghost"
                                 size="icon"
                                 className="text-destructive hover:text-destructive"
-                                onClick={() => handleDelete(table.id)}
+                                onClick={() => handleDeleteClick(table)}
                             >
                                 <Trash2 className="h-4 w-4" />
                                 <span className="sr-only">Delete</span>
@@ -137,6 +156,25 @@ export default function AdminTablePage() {
         onSave={handleSave}
         table={editingTable}
       />
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the table named "{tableToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setTableToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive"
+            >
+                Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,8 +1,6 @@
-
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useRouter } from "next-intl/navigation";
 import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
@@ -16,7 +14,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   login: (email: string, pass: string) => Promise<any>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
 };
 
@@ -33,7 +31,6 @@ function AuthLoadingScreen() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
@@ -66,10 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    signOut(auth).then(() => {
-        router.push("/login");
-    });
+  const logout = async () => {
+    await signOut(auth);
   };
 
   if (isLoading) {

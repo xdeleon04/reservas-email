@@ -1,10 +1,8 @@
-
 "use client";
 
-import Link from "next-intl/link";
 import { Button } from "@/components/ui/button";
 import { Utensils, Menu, LogOut, Globe } from "lucide-react";
-import { usePathname, useRouter } from "next-intl/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -39,6 +37,12 @@ export function Header() {
 
   const handleLocaleChange = (nextLocale: string) => {
     router.replace(pathname, { locale: nextLocale });
+    setIsSheetOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
     setIsSheetOpen(false);
   };
 
@@ -93,7 +97,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
           {user && !user.isAnonymous && (
-            <Button variant="ghost" size="icon" onClick={logout} title={t('logout')}>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title={t('logout')}>
               <LogOut className="h-5 w-5" />
               <span className="sr-only">{t('logout')}</span>
             </Button>
@@ -128,7 +132,7 @@ export function Header() {
                   <NavLink key={link.href} {...link} />
                 ))}
                  {user && !user.isAnonymous && (
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setIsSheetOpen(false); }}>
+                    <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         {t('logout')}
                     </Button>

@@ -4,49 +4,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    function isStaff() {
-      return request.auth.uid != null && request.auth.token.role in ['admin', 'receptionist', 'waiter'];
+    // Helper functions for auth checks
+    function isAuth() {
+      return request.auth != null;
     }
-
+    
+    function isUser(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+    
+    function getRole() {
+      return request.auth.token.role;
+    }
+    
     function isAdmin() {
-      return request.auth.token.role == 'admin';
+      return isAuth() && getRole() == 'admin';
     }
-
+    
     function isReceptionist() {
-      return request.auth.token.role == 'receptionist';
+      return isAuth() && getRole() == 'receptionist';
     }
     
     function isWaiter() {
-      return request.auth.token.role == 'waiter';
+      return isAuth() && getRole() == 'waiter';
     }
-
+    
     match /reservations/{reservationId} {
-      // Allow anonymous users to create their own reservation and tag it with their UID.
-      allow create: if request.auth.uid != null && request.resource.data.userId == request.auth.uid;
-      
-      // Allow staff to get any reservation.
-      // Allow an authenticated user (including anonymous) to get their own reservation.
-      allow get: if isStaff() || (request.auth.uid != null && request.auth.uid == resource.data.userId);
+      // ANY authenticated user (including anonymous) can create a reservation.
+      allow create: if isAuth();
 
-      // Allow staff to list all reservations.
-      // Allow an authenticated user (including anonymous) to query for their own reservations.
-      allow list: if isStaff() || (request.auth.uid != null && request.query.where.userId == request.auth.uid);
+      // Admins and Receptionists can read and delete ANY reservation.
+      allow read, delete: if isAdmin() || isReceptionist();
       
-      // Allow admins and receptionists to update/delete any reservation.
-      allow update, delete: if isAdmin() || isReceptionist();
+      // A user can read their own reservation document.
+      // Used on the confirmation page after booking.
+      allow read: if isUser(resource.data.userId);
+      
+      // Allow Admins and Receptionists to update any reservation.
+      allow update: if isAdmin() || isReceptionist();
     }
 
     match /tables/{tableId} {
-      // Any staff can read the tables list.
-      allow read: if isStaff();
-
-      // Only admins can create/delete tables.
-      allow create, delete: if isAdmin();
+      // Admins can do anything with tables.
+      allow write, delete: if isAdmin();
       
-      // Admins can update anything.
-      // Receptionists and Waiters can only update specific fields for their workflows.
-      allow update: if isAdmin() || 
-                      ((isReceptionist() || isWaiter()) && request.resource.data.keys().hasOnly(['status', 'customerName', 'reservationId']));
+      // All staff can read all tables.
+      allow read: if isAdmin() || isReceptionist() || isWaiter();
+      
+      // Allow receptionists and waiters to update only specific fields for specific status transitions.
+      allow update: if (isAdmin() || isReceptionist() || isWaiter()) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'customerName', 'reservationId']);
     }
   }
 }

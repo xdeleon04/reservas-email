@@ -66,16 +66,22 @@
   },
   "ReviewPage": {
     "title": "Review Your Reservation",
-    "description": "Find the reservations associated with your current session."
+    "description": "Enter your email address to find your reservations."
   },
   "ReviewForm": {
-    "submitting": "Loading your reservations...",
+    "email": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Find My Reservations",
+    "submitting": "Searching for reservations...",
+    "validation": {
+      "email": "Please enter a valid email address."
+    },
     "results": {
-        "title": "Found {count, plural, =0 {no reservations} =1 {# reservation} other {# reservations}} in your session",
+        "title": "Found {count, plural, =0 {no reservations} =1 {# reservation} other {# reservations}} for you",
         "bookedOn": "Booked on {date}",
         "guests": "{count, plural, =1 {# guest} other {# guests}}",
         "reservationFor": "Reservation for {datetime}",
-        "notFound": "No reservations found for your current session."
+        "notFound": "No reservations found for that email address."
     }
   },
   "LoginPage": {

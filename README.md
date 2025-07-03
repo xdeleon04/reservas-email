@@ -37,8 +37,8 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository**:
     ```sh
-    git clone https://github.com/your-repo/reservas-email.git
-    cd reservas-email
+    git clone https://github.com/xdeleon04/studio.git
+    cd studio
     ```
 
 2.  **Install NPM packages**:

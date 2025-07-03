@@ -1,8 +1,7 @@
 
 "use client";
 
-import Link from "next-intl/link";
-import { usePathname, useRouter } from "next-intl/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReactNode, useEffect } from "react";

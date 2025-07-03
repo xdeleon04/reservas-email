@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next-intl/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 const loginSchema = z.object({
   email: z.string().email(),

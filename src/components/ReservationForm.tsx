@@ -25,7 +25,7 @@ import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next-intl/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 export function ReservationForm() {
   const t = useTranslations('ReservationForm');

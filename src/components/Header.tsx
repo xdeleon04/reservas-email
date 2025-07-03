@@ -3,14 +3,13 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Utensils, Menu, X, LogOut } from "lucide-react";
+import { Utensils, Menu, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -87,12 +86,6 @@ export function Header() {
                   <Utensils className="h-6 w-6" />
                   <span>Reservas Email</span>
                 </Link>
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X />
-                    <span className="sr-only">Close menu</span>
-                  </Button>
-                </SheetClose>
               </div>
               <nav className="flex flex-col items-start gap-4">
                 {navLinks.map((link) => (

@@ -32,12 +32,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const activeTab = pathname.startsWith("/admin/tables") ? "tables" : "reservations";
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && (!user || user.isAnonymous)) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user) {
+  if (isLoading || !user || user.isAnonymous) {
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <Header />

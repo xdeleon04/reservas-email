@@ -10,6 +10,7 @@ import {
   Brush,
   Sparkles,
   User,
+  Search,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { TableDialog, TableSchema } from "@/components/TableDialog";
@@ -21,6 +22,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { db } from "@/lib/firebase";
 import {
@@ -65,7 +67,9 @@ export default function AdminTablePage() {
   const { user } = useAuth();
 
   const [tables, setTables] = useState<Table[]>([]);
+  const [filteredTables, setFilteredTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | undefined>(
     undefined
@@ -93,6 +97,15 @@ export default function AdminTablePage() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const lowercasedQuery = searchQuery.toLowerCase();
+    const filtered = tables.filter(table =>
+        table.name.toLowerCase().includes(lowercasedQuery) ||
+        (table.customerName && table.customerName.toLowerCase().includes(lowercasedQuery))
+    );
+    setFilteredTables(filtered);
+  }, [searchQuery, tables]);
 
   const handleAdd = () => {
     setEditingTable(undefined);
@@ -152,17 +165,29 @@ export default function AdminTablePage() {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>{t("cardTitle")}</CardTitle>
-            <CardDescription>{t("cardDescription")}</CardDescription>
+        <CardHeader>
+          <div className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>{t("cardTitle")}</CardTitle>
+                <CardDescription>{t("cardDescription")}</CardDescription>
+            </div>
+            {user?.isAdmin && (
+                <Button onClick={handleAdd}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {t("addTable")}
+                </Button>
+            )}
           </div>
-          {user?.isAdmin && (
-            <Button onClick={handleAdd}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              {t("addTable")}
-            </Button>
-          )}
+          <div className="relative mt-4">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder={t('searchPlaceholder')}
+              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -171,13 +196,13 @@ export default function AdminTablePage() {
             </div>
           ) : (
             <>
-              {tables.length === 0 ? (
+              {filteredTables.length === 0 ? (
                 <p className="text-center p-8 text-muted-foreground">
-                  {t("noTables")}
+                  {searchQuery ? t('noResults') : t('noTables')}
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {tables.map((table) => {
+                  {filteredTables.map((table) => {
                     return (
                       <Card key={table.id} className="flex flex-col">
                         <CardHeader>

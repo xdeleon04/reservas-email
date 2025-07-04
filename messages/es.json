@@ -138,6 +138,7 @@
   "AdminReservationPage": {
     "cardTitle": "Todas las Reservas",
     "cardDescription": "Ver y gestionar todas las reservas de clientes.",
+    "searchPlaceholder": "Buscar por nombre o email...",
     "tableHead": {
         "customer": "Cliente",
         "guests": "Comensales",
@@ -155,6 +156,7 @@
         "delete": "Eliminar"
     },
     "noReservations": "No se encontraron reservas.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
     "deleteDialog": {
         "title": "¿Estás absolutamente seguro?",
         "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la reserva para {name} el {datetime}.",
@@ -166,6 +168,7 @@
     "cardTitle": "Gestión de Mesas",
     "cardDescription": "Vista general del estado del salón.",
     "addTable": "Añadir Mesa",
+    "searchPlaceholder": "Buscar por nombre de mesa o cliente...",
     "tableHead": {
         "name": "Nombre",
         "capacity": "Capacidad",
@@ -179,6 +182,7 @@
         "markOccupied": "Marcar como Ocupada"
     },
     "noTables": "No hay mesas configuradas. Añade una para empezar.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
     "deleteDialog": {
         "title": "¿Estás absolutamente seguro?",
         "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la mesa llamada \"{name}\".",
@@ -195,6 +199,7 @@
   "AdminUserPage": {
     "title": "Gestión de Usuarios",
     "description": "Asigna roles a los miembros del personal y gestiona sus cuentas.",
+    "searchPlaceholder": "Buscar por email...",
     "tableHead": {
       "user": "Usuario",
       "role": "Rol"
@@ -206,6 +211,7 @@
       "delete": "Eliminar Usuario"
     },
     "noUsers": "No se encontraron usuarios.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
     "deleteDialog": {
       "title": "¿Estás absolutamente seguro?",
       "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario {email} y todos sus datos asociados.",

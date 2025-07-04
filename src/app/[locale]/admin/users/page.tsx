@@ -24,9 +24,11 @@ import {
   Trash2,
   Loader2,
   Edit,
+  Search,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,7 +49,9 @@ export default function AdminUsersPage() {
   const { toast } = useToast();
 
   const [users, setUsers] = useState<AppUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<AppUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [userToEdit, setUserToEdit] = useState<AppUser | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -65,6 +69,14 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    const lowercasedQuery = searchQuery.toLowerCase();
+    const filtered = users.filter(user =>
+      user.email && user.email.toLowerCase().includes(lowercasedQuery)
+    );
+    setFilteredUsers(filtered);
+  }, [searchQuery, users]);
 
   const handleEditClick = (user: AppUser) => {
     setUserToEdit(user);
@@ -115,6 +127,16 @@ export default function AdminUsersPage() {
         <CardHeader>
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
+          <div className="relative mt-4">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder={t('searchPlaceholder')}
+              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -131,7 +153,7 @@ export default function AdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <TableRow key={user.uid}>
                     <TableCell className="font-medium">{user.email || 'N/A'}</TableCell>
                     <TableCell>
@@ -166,7 +188,11 @@ export default function AdminUsersPage() {
               </TableBody>
             </Table>
           )}
-          {users.length === 0 && !isLoading && <p className="text-center p-8 text-muted-foreground">{t('noUsers')}</p>}
+          {filteredUsers.length === 0 && !isLoading && (
+            <p className="text-center p-8 text-muted-foreground">
+                {searchQuery ? t('noResults') : t('noUsers')}
+            </p>
+          )}
         </CardContent>
       </Card>
 

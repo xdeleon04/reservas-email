@@ -27,9 +27,11 @@ import {
   Loader2,
   UserCheck,
   CheckCircle2,
+  Search,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, doc, query, orderBy, Timestamp, deleteDoc } from "firebase/firestore";
 import {
@@ -70,8 +72,10 @@ export default function AdminReservationPage() {
   const t = useTranslations('AdminReservationPage');
   const tStatus = useTranslations('Statuses');
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
   const [tables, setTables] = useState<TableType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reservationToDelete, setReservationToDelete] = useState<Reservation | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -108,6 +112,17 @@ export default function AdminReservationPage() {
       if (!isAuthLoading) setIsLoading(false);
     }
   }, [user, isAuthLoading]);
+
+  // Filter reservations based on search query
+  useEffect(() => {
+    const lowercasedQuery = searchQuery.toLowerCase();
+    const filtered = reservations.filter(res =>
+      res.name.toLowerCase().includes(lowercasedQuery) ||
+      res.email.toLowerCase().includes(lowercasedQuery)
+    );
+    setFilteredReservations(filtered);
+  }, [searchQuery, reservations]);
+
 
   // Fetch tables (all staff can do this)
   useEffect(() => {
@@ -192,6 +207,16 @@ export default function AdminReservationPage() {
           <CardHeader>
               <CardTitle>{t('cardTitle')}</CardTitle>
               <CardDescription>{t('cardDescription')}</CardDescription>
+              <div className="relative mt-4">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                type="search"
+                placeholder={t('searchPlaceholder')}
+                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
           </CardHeader>
           <CardContent>
               {isLoading ? (
@@ -214,7 +239,7 @@ export default function AdminReservationPage() {
                   </TableRow>
               </TableHeader>
               <TableBody>
-                  {reservations.map((res) => (
+                  {filteredReservations.map((res) => (
                   <TableRow key={res.id}>
                       <TableCell className="font-medium">{res.name}</TableCell>
                       <TableCell className="hidden sm:table-cell">{res.guests}</TableCell>
@@ -261,7 +286,11 @@ export default function AdminReservationPage() {
                   ))}
               </TableBody>
               </Table>
-              {reservations.length === 0 && !isLoading && <p className="text-center p-8 text-muted-foreground">{t('noReservations')}</p>}
+              {filteredReservations.length === 0 && !isLoading && (
+                <p className="text-center p-8 text-muted-foreground">
+                  {searchQuery ? t('noResults') : t('noReservations')}
+                </p>
+              )}
               </>
               )}
           </CardContent>

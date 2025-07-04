@@ -16,7 +16,8 @@
     "light": "Claro",
     "dark": "Oscuro",
     "system": "Sistema",
-    "toggleTheme": "Alternar tema"
+    "toggleTheme": "Alternar tema",
+    "loggedInAs": "Sesión iniciada como"
   },
   "HomePage": {
     "title": "Reserva tu Mesa",
@@ -65,7 +66,7 @@
   },
   "ReviewPage": {
     "title": "Consulta tu Reserva",
-    "description": "Encuentra las reservas asociadas a tu sesión actual."
+    "description": "Introduce tu correo electrónico para encontrar tus reservas."
   },
   "ReviewForm": {
     "email": "Correo Electrónico",
@@ -73,14 +74,14 @@
     "submit": "Buscar Mis Reservas",
     "submitting": "Buscando reservas...",
     "validation": {
-        "email": "Por favor, introduce un correo válido."
+        "email": "Por favor, introduce un correo electrónico válido."
     },
     "results": {
         "title": "Se encontraron {count, plural, =0 {ninguna reserva} =1 {# reserva} other {# reservas}} para ti",
         "bookedOn": "Reservado el {date}",
         "guests": "{count, plural, =1 {# comensal} other {# comensales}}",
         "reservationFor": "Reserva para el {datetime}",
-        "notFound": "No se encontraron reservas para tu usuario."
+        "notFound": "No se encontraron reservas para ese correo electrónico."
     }
   },
   "LoginPage": {
@@ -90,6 +91,8 @@
     "emailPlaceholder": "admin@ejemplo.com",
     "password": "Contraseña",
     "submit": "Iniciar Sesión",
+    "noAccount": "¿No tienes una cuenta?",
+    "createAccount": "Crea una",
     "toast": {
         "title": "Error de Acceso",
         "invalidEmail": "Formato de correo electrónico inválido.",
@@ -97,6 +100,32 @@
         "invalidCredential": "Correo electrónico o contraseña inválidos.",
         "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo.",
         "checkCredentials": "Acceso fallido. Por favor, revisa tus credenciales."
+    },
+    "unapprovedDialog": {
+      "title": "Cuenta Pendiente de Aprobación",
+      "description": "Tu cuenta ha sido creada, pero no puedes iniciar sesión hasta que un administrador te asigne un rol. Por favor, contacta a tu gerente.",
+      "confirm": "Aceptar"
+    }
+  },
+  "SignupPage": {
+    "title": "Crear Cuenta de Personal",
+    "description": "Crea una nueva cuenta para un miembro del personal.",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "personal@ejemplo.com",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "submit": "Crear Cuenta",
+    "submitting": "Creando...",
+    "backToLogin": "Volver al inicio de sesión",
+    "toast": {
+      "successTitle": "¡Cuenta Creada!",
+      "successDescription": "Ya puedes iniciar sesión con las nuevas credenciales.",
+      "failTitle": "Fallo al Registrarse",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "emailInUse": "Este correo electrónico ya está en uso.",
+      "weakPassword": "La contraseña debe tener al menos 6 caracteres.",
+      "invalidEmail": "Formato de correo electrónico inválido.",
+      "unknownError": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo."
     }
   },
   "AdminLayout": {
@@ -109,6 +138,7 @@
   "AdminReservationPage": {
     "cardTitle": "Todas las Reservas",
     "cardDescription": "Ver y gestionar todas las reservas de clientes.",
+    "searchPlaceholder": "Buscar por nombre o email...",
     "tableHead": {
         "customer": "Cliente",
         "guests": "Comensales",
@@ -126,6 +156,7 @@
         "delete": "Eliminar"
     },
     "noReservations": "No se encontraron reservas.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
     "deleteDialog": {
         "title": "¿Estás absolutamente seguro?",
         "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la reserva para {name} el {datetime}.",
@@ -137,6 +168,10 @@
     "cardTitle": "Gestión de Mesas",
     "cardDescription": "Vista general del estado del salón.",
     "addTable": "Añadir Mesa",
+    "searchPlaceholder": "Buscar por nombre o cliente...",
+    "capacityPlaceholder": "Capacidad mín.",
+    "statusPlaceholder": "Filtrar por estado",
+    "allStatuses": "Todos los estados",
     "tableHead": {
         "name": "Nombre",
         "capacity": "Capacidad",
@@ -146,9 +181,11 @@
         "edit": "Editar",
         "delete": "Eliminar",
         "markCleaning": "Marcar en limpieza",
-        "markAvailable": "Marcar como disponible"
+        "markAvailable": "Marcar como disponible",
+        "markOccupied": "Marcar como Ocupada"
     },
     "noTables": "No hay mesas configuradas. Añade una para empezar.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
     "deleteDialog": {
         "title": "¿Estás absolutamente seguro?",
         "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la mesa llamada \"{name}\".",
@@ -158,14 +195,48 @@
     "tableCard": {
         "capacity": "Capacidad: {capacity}",
         "customer": "Cliente: {name}",
-        "noCustomer": "Sin cliente asignado"
+        "noCustomer": "Sin cliente asignado",
+        "walkInCustomer": "Cliente sin reserva"
     }
   },
   "AdminUserPage": {
     "title": "Gestión de Usuarios",
-    "description": "Asigna roles al personal usando un script seguro.",
-    "cardTitle": "Cómo Asignar Roles",
-    "cardDescription": "Los roles de usuario (admin, receptionist, waiter) deben establecerse utilizando el SDK de Firebase Admin desde un entorno de servidor seguro. Consulta el archivo README.md del proyecto para una guía detallada y un script de ejemplo para gestionar los roles de usuario de forma segura."
+    "description": "Asigna roles a los miembros del personal y gestiona sus cuentas.",
+    "searchPlaceholder": "Buscar por email...",
+    "tableHead": {
+      "user": "Usuario",
+      "role": "Rol"
+    },
+    "actions": {
+      "label": "Acciones",
+      "toggleMenu": "Alternar menú",
+      "editRole": "Editar Rol",
+      "delete": "Eliminar Usuario"
+    },
+    "noUsers": "No se encontraron usuarios.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
+    "deleteDialog": {
+      "title": "¿Estás absolutamente seguro?",
+      "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario {email} y todos sus datos asociados.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "roleDialog": {
+      "title": "Cambiar Rol de Usuario",
+      "description": "Selecciona un nuevo rol para {email}.",
+      "assignRole": "Asignar Rol",
+      "selectPlaceholder": "Seleccionar un rol",
+      "cancel": "Cancelar",
+      "save": "Guardar Cambios"
+    },
+    "toast": {
+      "roleSuccessTitle": "Rol Actualizado",
+      "roleSuccessDescription": "El rol para {email} ha sido cambiado a {role}.",
+      "roleErrorTitle": "Fallo al Actualizar",
+      "deleteSuccessTitle": "Usuario Eliminado",
+      "deleteSuccessDescription": "El usuario {email} ha sido eliminado permanentemente.",
+      "deleteErrorTitle": "Fallo al Eliminar"
+    }
   },
   "TableDialog": {
     "editTitle": "Editar Mesa",

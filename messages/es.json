@@ -168,7 +168,10 @@
     "cardTitle": "Gestión de Mesas",
     "cardDescription": "Vista general del estado del salón.",
     "addTable": "Añadir Mesa",
-    "searchPlaceholder": "Buscar por nombre de mesa o cliente...",
+    "searchPlaceholder": "Buscar por nombre o cliente...",
+    "capacityPlaceholder": "Capacidad mín.",
+    "statusPlaceholder": "Filtrar por estado",
+    "allStatuses": "Todos los estados",
     "tableHead": {
         "name": "Nombre",
         "capacity": "Capacidad",
@@ -283,3 +286,5 @@
     "description": "Reservas de mesa sin esfuerzo."
   }
 }
+
+    

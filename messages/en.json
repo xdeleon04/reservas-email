@@ -168,7 +168,10 @@
     "cardTitle": "Table Management",
     "cardDescription": "Visual overview of the restaurant floor.",
     "addTable": "Add Table",
-    "searchPlaceholder": "Search by table or customer name...",
+    "searchPlaceholder": "Search by name or customer...",
+    "capacityPlaceholder": "Min. capacity",
+    "statusPlaceholder": "Filter by status",
+    "allStatuses": "All Statuses",
     "tableHead": {
         "name": "Name",
         "capacity": "Capacity",
@@ -283,3 +286,5 @@
     "description": "Effortless table reservations."
   }
 }
+
+    

@@ -53,6 +53,13 @@ import {
     markTableAsAvailable, 
     markTableAsOccupied 
 } from "@/actions/tables";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type Table = z.infer<typeof TableSchema> & {
   id: string;
@@ -70,6 +77,8 @@ export default function AdminTablePage() {
   const [filteredTables, setFilteredTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [capacityFilter, setCapacityFilter] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | undefined>(
     undefined
@@ -100,12 +109,19 @@ export default function AdminTablePage() {
 
   useEffect(() => {
     const lowercasedQuery = searchQuery.toLowerCase();
-    const filtered = tables.filter(table =>
-        table.name.toLowerCase().includes(lowercasedQuery) ||
-        (table.customerName && table.customerName.toLowerCase().includes(lowercasedQuery))
-    );
+    const filtered = tables.filter(table => {
+        const nameMatch = table.name.toLowerCase().includes(lowercasedQuery);
+        const customerMatch = table.customerName && table.customerName.toLowerCase().includes(lowercasedQuery);
+        const textMatch = nameMatch || customerMatch;
+
+        const statusMatch = statusFilter === "all" || table.status === statusFilter;
+        
+        const capacityMatch = !capacityFilter || table.capacity >= parseInt(capacityFilter, 10);
+
+        return textMatch && statusMatch && capacityMatch;
+    });
     setFilteredTables(filtered);
-  }, [searchQuery, tables]);
+  }, [searchQuery, tables, statusFilter, capacityFilter]);
 
   const handleAdd = () => {
     setEditingTable(undefined);
@@ -166,27 +182,49 @@ export default function AdminTablePage() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
                 <CardTitle>{t("cardTitle")}</CardTitle>
                 <CardDescription>{t("cardDescription")}</CardDescription>
             </div>
             {user?.isAdmin && (
-                <Button onClick={handleAdd}>
+                <Button onClick={handleAdd} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 {t("addTable")}
                 </Button>
             )}
           </div>
-          <div className="relative mt-4">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="mt-4 flex flex-col sm:flex-row items-center gap-2">
+            <div className="relative w-full sm:flex-grow">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder={t('searchPlaceholder')}
+                className="w-full rounded-lg bg-background pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <Input
-              type="search"
-              placeholder={t('searchPlaceholder')}
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              type="number"
+              placeholder={t('capacityPlaceholder')}
+              className="w-full sm:w-[160px]"
+              value={capacityFilter}
+              onChange={(e) => setCapacityFilter(e.target.value)}
+              min="1"
             />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder={t('statusPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allStatuses')}</SelectItem>
+                <SelectItem value="Available">{tStatus('Available')}</SelectItem>
+                <SelectItem value="Occupied">{tStatus('Occupied')}</SelectItem>
+                <SelectItem value="Reserved">{tStatus('Reserved')}</SelectItem>
+                <SelectItem value="Cleaning">{tStatus('Cleaning')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -198,7 +236,7 @@ export default function AdminTablePage() {
             <>
               {filteredTables.length === 0 ? (
                 <p className="text-center p-8 text-muted-foreground">
-                  {searchQuery ? t('noResults') : t('noTables')}
+                  {searchQuery || statusFilter !== 'all' || capacityFilter ? t('noResults') : t('noTables')}
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -344,3 +382,5 @@ export default function AdminTablePage() {
     </>
   );
 }
+
+    

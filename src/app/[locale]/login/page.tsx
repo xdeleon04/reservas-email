@@ -95,7 +95,7 @@ export default function LoginPage() {
 
     if (loggedInUser && !loggedInUser.isAnonymous) {
       // Check if the user has been assigned a role by an admin.
-      const hasRole = loggedInUser.isAdmin || loggedInUser.isReceptionist || loggedInUser.isWaiter;
+      const hasRole = loggedInUser.isAdmin || loggedInUser.isReceptionist || loggedInUser.isWaiter || loggedInUser.isCashier;
       
       if (hasRole) {
           console.log("User has a role, redirecting to admin page.");

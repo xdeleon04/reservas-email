@@ -1,3 +1,4 @@
+
 'use server'
 
 import admin from '@/lib/firebase-admin';
@@ -60,9 +61,11 @@ export async function markTableAsOccupied(tableId: string, customerName: string)
         await tableRef.update({
             status: 'Occupied',
             customerName: customerName,
-            reservationId: null // Explicitly null for walk-ins
+            reservationId: null, // Explicitly null for walk-ins
+            billAmount: Math.floor(Math.random() * (250 - 30 + 1)) + 30,
         });
         revalidatePath('/admin/tables');
+        revalidatePath('/admin/payments');
         return { success: true };
     } catch (error: any) {
         console.error("Error marking table as occupied:", error);

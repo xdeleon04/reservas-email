@@ -103,21 +103,24 @@ export async function seatGuests(reservationId: string, tableId: string): Promis
     }
 }
 
-export async function completeReservation(reservationId: string, tableId: string, paymentMethod: string): Promise<ActionResult> {
+export async function completeReservation(tableId: string, paymentMethod: string, reservationId?: string): Promise<ActionResult> {
     try {
         const batch = admin.firestore().batch();
         
-        const resRef = admin.firestore().collection('reservations').doc(reservationId);
-        batch.update(resRef, { 
-            status: "Completed",
-            paymentMethod: paymentMethod,
-        });
+        if (reservationId) {
+            const resRef = admin.firestore().collection('reservations').doc(reservationId);
+            batch.update(resRef, { 
+                status: "Completed",
+                paymentMethod: paymentMethod,
+            });
+        }
 
         const tableRef = admin.firestore().collection('tables').doc(tableId);
         batch.update(tableRef, {
             status: "Cleaning", // Change status to Cleaning
             customerName: null,
-            reservationId: null
+            reservationId: null,
+            billAmount: null,
         });
 
         await batch.commit();

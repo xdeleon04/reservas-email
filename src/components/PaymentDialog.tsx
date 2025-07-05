@@ -22,28 +22,18 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { completeReservation } from "@/actions/reservations";
 import { useToast } from "@/hooks/use-toast";
-import type { Table as TableType } from "@/app/[locale]/admin/tables/page";
-import type { Timestamp } from "firebase/firestore";
-
-type Reservation = {
-  id: string;
-  name: string;
-  billAmount?: number;
-  [key: string]: any; 
-};
+import type { PayableItem } from "@/app/[locale]/admin/payments/page";
 
 type PaymentDialogProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  table: TableType;
-  reservation: Reservation;
+  item: PayableItem;
 };
 
 export function PaymentDialog({
   isOpen,
   setIsOpen,
-  table,
-  reservation,
+  item,
 }: PaymentDialogProps) {
   const t = useTranslations('PaymentDialog');
   const { toast } = useToast();
@@ -54,7 +44,7 @@ export function PaymentDialog({
     if (!paymentMethod) return;
     setIsSubmitting(true);
 
-    const result = await completeReservation(reservation.id, table.id, paymentMethod);
+    const result = await completeReservation(item.table.id, paymentMethod, item.reservationId);
     
     if (result.success) {
         toast({
@@ -77,15 +67,15 @@ export function PaymentDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">{t('title', {tableName: table.name})}</DialogTitle>
+          <DialogTitle className="font-headline">{t('title', {tableName: item.table.name})}</DialogTitle>
           <DialogDescription>
-            {t('description', {customerName: reservation.name})}
+            {t('description', {customerName: item.customerName})}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
             <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{t('billAmount')}</span>
-                <span className="text-lg font-bold text-foreground">${reservation.billAmount?.toFixed(2) || '0.00'}</span>
+                <span className="text-lg font-bold text-foreground">${item.billAmount.toFixed(2)}</span>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="payment-method-select">{t('paymentMethod')}</Label>

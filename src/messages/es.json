@@ -133,7 +133,8 @@
     "description": "Gestiona las operaciones de tu restaurante.",
     "reservations": "Reservas",
     "tables": "Mesas",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "payments": "Pagos"
   },
   "AdminReservationPage": {
     "cardTitle": "Todas las Reservas",
@@ -151,7 +152,6 @@
         "toggleMenu": "Alternar menú",
         "confirm": "Confirmar",
         "seat": "Sentar Clientes",
-        "complete": "Marcar como Completada",
         "cancel": "Cancelar",
         "delete": "Eliminar"
     },
@@ -236,6 +236,33 @@
       "deleteSuccessTitle": "Usuario Eliminado",
       "deleteSuccessDescription": "El usuario {email} ha sido eliminado permanentemente.",
       "deleteErrorTitle": "Fallo al Eliminar"
+    }
+  },
+  "AdminPaymentPage": {
+    "cardTitle": "Procesar Pagos",
+    "cardDescription": "Ver mesas ocupadas y procesar las cuentas de los clientes.",
+    "searchPlaceholder": "Buscar por nombre de mesa o cliente...",
+    "noOccupiedTables": "No hay mesas ocupadas con pagos pendientes.",
+    "tableInfo": "Mesa: {tableName}",
+    "customerInfo": "Cliente: {customerName}",
+    "billAmount": "Cuenta: ${amount}",
+    "processPayment": "Procesar Pago"
+  },
+  "PaymentDialog": {
+    "title": "Procesar Pago para Mesa {tableName}",
+    "description": "Procesar la cuenta para el cliente {customerName}.",
+    "billAmount": "Monto de la Cuenta",
+    "paymentMethod": "Método de Pago",
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "selectMethod": "Selecciona un método de pago",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar Pago y Cerrar Mesa",
+    "toast": {
+      "successTitle": "Pago Exitoso",
+      "successDescription": "El pago ha sido procesado y la mesa ahora está marcada para limpieza.",
+      "errorTitle": "Fallo en el Pago",
+      "errorDescription": "Hubo un error al procesar el pago. Por favor, inténtalo de nuevo."
     }
   },
   "TableDialog": {

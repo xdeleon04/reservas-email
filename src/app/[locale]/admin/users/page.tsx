@@ -43,10 +43,21 @@ import { useTranslations } from "next-intl";
 import { getUsers, setUserRole, deleteUser, type AppUser } from "@/actions/users";
 import { useToast } from "@/hooks/use-toast";
 import { UserRoleDialog } from "@/components/UserRoleDialog";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "@/i18n/navigation";
 
 export default function AdminUsersPage() {
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
   const t = useTranslations("AdminUserPage");
   const { toast } = useToast();
+
+  // Redirect if user is not authorized
+  useEffect(() => {
+    if (!isAuthLoading && user && !user.isAdmin) {
+      router.replace("/admin/tables");
+    }
+  }, [user, isAuthLoading, router]);
 
   const [users, setUsers] = useState<AppUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AppUser[]>([]);

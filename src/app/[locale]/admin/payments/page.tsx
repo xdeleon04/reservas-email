@@ -42,13 +42,17 @@ type Reservation = {
   billAmount?: number;
 };
 
-type OccupiedTable = {
-  table: TableType;
-  reservation: Reservation;
+export type PayableItem = {
+    table: TableType;
+    customerName: string;
+    billAmount: number;
+    reservationId?: string;
+    reservation?: Reservation;
 };
 
 export default function AdminPaymentPage() {
   const t = useTranslations("AdminPaymentPage");
+  const tCard = useTranslations("AdminTablePage.tableCard");
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
@@ -56,7 +60,7 @@ export default function AdminPaymentPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<OccupiedTable | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PayableItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Redirect if user is not authorized
@@ -94,46 +98,74 @@ export default function AdminPaymentPage() {
 
     if (reservationIds.length === 0) {
       setReservations([]);
-      setIsLoading(false);
+      // Don't set loading to false here, wait for walk-ins to be processed
       return;
     }
 
     const q = query(
       collection(db, "reservations"),
-      where(documentId(), "in", reservationIds)
+      where(documentId(), "in", reservationIds),
+      where("status", "==", "Seated")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const resData = snapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Reservation)
       );
       setReservations(resData);
-      setIsLoading(false);
     }, (error) => {
       console.error("Error fetching reservations for tables: ", error);
-      setIsLoading(false);
     });
     return () => unsubscribe();
   }, [tables]);
 
-  const occupiedTables = useMemo<OccupiedTable[]>(() => {
+  // Combined effect to set loading state
+  useEffect(() => {
+      if (user?.isAdmin || user?.isCashier) {
+          // This effect determines the overall loading state.
+          // It relies on `tables` being fetched first.
+          setIsLoading(false);
+      }
+  }, [tables, user]);
+
+  const payableItems = useMemo<PayableItem[]>(() => {
     const lowercasedQuery = searchQuery.toLowerCase();
     
-    return tables
-      .map((table) => {
-        const reservation = reservations.find(
-          (res) => res.id === table.reservationId
-        );
-        return reservation ? { table, reservation } : null;
-      })
-      .filter((item): item is OccupiedTable => 
-        !!item && (
-            item.table.name.toLowerCase().includes(lowercasedQuery) ||
-            item.reservation.name.toLowerCase().includes(lowercasedQuery)
-        )
-      );
-  }, [tables, reservations, searchQuery]);
+    // Process tables with reservations
+    const itemsFromReservations = tables
+        .filter(table => !!table.reservationId)
+        .map((table) => {
+            const reservation = reservations.find(
+                (res) => res.id === table.reservationId && res.status === 'Seated'
+            );
+            return reservation ? { 
+                table, 
+                customerName: reservation.name,
+                billAmount: reservation.billAmount || 0,
+                reservationId: reservation.id,
+                reservation: reservation,
+            } : null;
+        })
+        .filter((item): item is NonNullable<typeof item> => !!item);
 
-  const handleProcessPaymentClick = (item: OccupiedTable) => {
+    // Process walk-in tables
+    const itemsFromWalkIns = tables
+        .filter(table => !table.reservationId && table.status === 'Occupied')
+        .map(table => ({
+            table,
+            customerName: table.customerName || tCard('walkInCustomer'),
+            billAmount: table.billAmount || 0,
+        }));
+
+    const allItems = [...itemsFromReservations, ...itemsFromWalkIns];
+    
+    return allItems.filter(item => 
+        item.table.name.toLowerCase().includes(lowercasedQuery) ||
+        item.customerName.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [tables, reservations, searchQuery, tCard]);
+
+
+  const handleProcessPaymentClick = (item: PayableItem) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
@@ -164,13 +196,13 @@ export default function AdminPaymentPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {occupiedTables.length === 0 ? (
+          {payableItems.length === 0 ? (
             <p className="text-center p-8 text-muted-foreground">
               {t("noOccupiedTables")}
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {occupiedTables.map((item) => (
+              {payableItems.map((item) => (
                 <Card key={item.table.id} className="flex flex-col">
                   <CardHeader>
                     <CardTitle>{item.table.name}</CardTitle>
@@ -178,11 +210,11 @@ export default function AdminPaymentPage() {
                   <CardContent className="flex-grow space-y-2 text-muted-foreground">
                     <p className="flex items-center">
                       <User className="mr-2 h-4 w-4" />
-                      {item.reservation.name}
+                      {item.customerName}
                     </p>
                     <p className="flex items-center font-medium text-foreground">
                       <DollarSign className="mr-2 h-4 w-4" />
-                      {t('billAmount', {amount: item.reservation.billAmount?.toFixed(2) || '0.00'})}
+                      {t('billAmount', {amount: item.billAmount.toFixed(2)})}
                     </p>
                   </CardContent>
                   <CardFooter>
@@ -202,8 +234,7 @@ export default function AdminPaymentPage() {
         <PaymentDialog
             isOpen={isDialogOpen}
             setIsOpen={setIsDialogOpen}
-            table={selectedItem.table}
-            reservation={selectedItem.reservation}
+            item={selectedItem}
         />
       )}
     </>

@@ -46,6 +46,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -60,12 +61,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRouter } from "@/i18n/navigation";
 
 export type Table = z.infer<typeof TableSchema> & {
   id: string;
   customerName?: string;
   reservationId?: string;
+  billAmount?: number;
 };
 
 export default function AdminTablePage() {

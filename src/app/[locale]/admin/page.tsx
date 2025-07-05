@@ -26,7 +26,6 @@ import {
   Trash2,
   Loader2,
   UserCheck,
-  CheckCircle2,
   Search,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -52,7 +51,6 @@ import { useRouter } from "@/i18n/navigation";
 import {
     confirmReservation,
     seatGuests,
-    completeReservation,
     cancelReservation
 } from "@/actions/reservations";
 
@@ -158,12 +156,6 @@ export default function AdminReservationPage() {
     }
   };
 
-  const handleCompleteReservation = async (reservation: Reservation) => {
-      if (reservation.assignedTableId) {
-          await completeReservation(reservation.id, reservation.assignedTableId);
-      }
-  };
-  
   const handleDeleteClick = (reservation: Reservation) => {
     setReservationToDelete(reservation);
     setIsDeleteDialogOpen(true);
@@ -265,10 +257,6 @@ export default function AdminReservationPage() {
                           <DropdownMenuItem onSelect={() => handleSeatGuests(res)} disabled={res.status !== 'Confirmed'}>
                               <UserCheck className="mr-2 h-4 w-4" />
                               {t('actions.seat')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleCompleteReservation(res)} disabled={res.status !== 'Seated'}>
-                              <CheckCircle2 className="mr-2 h-4 w-4" />
-                              {t('actions.complete')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => handleCancelReservation(res)} disabled={!['Pending', 'Confirmed'].includes(res.status)}>
                               <XCircle className="mr-2 h-4 w-4" />

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -271,9 +270,9 @@ export default function AdminTablePage() {
                     return (
                       <Card key={table.id} className="flex flex-col">
                         <CardHeader>
-                          <CardTitle className="flex justify-between items-center">
+                          <CardTitle className="flex justify-between items-start gap-2">
                             <span>{table.name}</span>
-                            <Badge variant={statusVariant[table.status]}>
+                            <Badge variant={statusVariant[table.status]} className="whitespace-nowrap flex-shrink-0">
                               {tStatus(table.status)}
                             </Badge>
                           </CardTitle>

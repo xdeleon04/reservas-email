@@ -81,16 +81,33 @@ export async function confirmReservation(reservationId: string, reservationName:
 
 export async function seatGuests(reservationId: string, tableId: string): Promise<ActionResult> {
     try {
-        const batch = admin.firestore().batch();
+        const db = admin.firestore();
+        const batch = db.batch();
+
+        const resRef = db.collection('reservations').doc(reservationId);
         
-        const resRef = admin.firestore().collection('reservations').doc(reservationId);
+        // Get reservation data to retrieve the name
+        const reservationDoc = await resRef.get();
+        if (!reservationDoc.exists) {
+            throw new Error("Reservation not found.");
+        }
+        const reservationData = reservationDoc.data();
+        const customerName = reservationData?.name;
+        const billAmount = Math.floor(Math.random() * (250 - 30 + 1)) + 30; // Random bill between $30 and $250
+
+        // Update reservation
         batch.update(resRef, { 
             status: "Seated",
-            billAmount: Math.floor(Math.random() * (250 - 30 + 1)) + 30, // Random bill between $30 and $250
+            billAmount: billAmount,
         });
 
-        const tableRef = admin.firestore().collection('tables').doc(tableId);
-        batch.update(tableRef, { status: "Occupied" });
+        // Update table with denormalized data for payment processing
+        const tableRef = db.collection('tables').doc(tableId);
+        batch.update(tableRef, { 
+            status: "Occupied",
+            customerName: customerName,
+            billAmount: billAmount,
+        });
 
         await batch.commit();
         revalidatePath('/admin');

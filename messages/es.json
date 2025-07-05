@@ -279,7 +279,7 @@
     "available": "Disponible",
     "occupied": "Ocupada",
     "reserved": "Reservada",
-    "cleaning": "En limpieza",
+    "cleaning": "Necesita Limpieza",
     "cancel": "Cancelar",
     "save": "Guardar",
     "validation": {
@@ -307,7 +307,7 @@
     "Available": "Disponible",
     "Occupied": "Ocupada",
     "Reserved": "Reservada",
-    "Cleaning": "En limpieza"
+    "Cleaning": "Necesita Limpieza"
   },
   "Metadata": {
     "title": "Reservas Email",

@@ -279,7 +279,7 @@
     "available": "Available",
     "occupied": "Occupied",
     "reserved": "Reserved",
-    "cleaning": "Cleaning",
+    "cleaning": "Needs Cleaning",
     "cancel": "Cancel",
     "save": "Save",
     "validation": {
@@ -307,7 +307,7 @@
     "Available": "Available",
     "Occupied": "Occupied",
     "Reserved": "Reserved",
-    "Cleaning": "Cleaning"
+    "Cleaning": "Needs Cleaning"
   },
   "Metadata": {
     "title": "Reservas Email",

@@ -1,39 +1,68 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isStaff() {
-      return request.auth.token.role in ['admin', 'receptionist', 'waiter'];
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
     }
-    
+
+    function isAnonymous() {
+      return request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+
     function isAdmin() {
-      return request.auth.token.role == 'admin';
-    }
-
-    function isReceptionist() {
-      return request.auth.token.role == 'receptionist';
-    }
-
-    match /reservations/{reservationId} {
-      // Let anyone create a reservation.
-      allow create: if true;
-      
-      // Only admins and receptionists can read, update, or delete reservations directly.
-      // Waiters interact with reservations via secure server actions.
-      allow read, update, delete: if isAdmin() || isReceptionist();
+      return getUserRole() == 'admin';
     }
     
+    function isReceptionist() {
+      return getUserRole() == 'receptionist';
+    }
+
+    function isWaiter() {
+        return getUserRole() == 'waiter';
+    }
+
+    function isCashier() {
+        return getUserRole() == 'cashier';
+    }
+
+    function isStaff() {
+        return isAdmin() || isReceptionist() || isWaiter() || isCashier();
+    }
+
+    // Reservations can be created by anonymous users.
+    // They can be read by the user who created them (for review) via a secure server action.
+    // They can be read by staff based on their roles.
+    match /reservations/{resId} {
+      allow create: if isAnonymous() && request.resource.data.userId == request.auth.uid;
+      
+      // Admins/Receptionists can see all reservations.
+      // Cashiers can see 'Seated' reservations to process payments.
+      allow read: if (isAdmin() || isReceptionist()) || 
+                     (isCashier() && resource.data.status == 'Seated');
+
+      // Updates and Deletes are handled by server actions, so direct client writes are locked down.
+      allow update, delete: if false; 
+    }
+
+    // Tables can be read by all staff.
+    // Admins can create/update/delete tables directly.
+    // Other roles use secure server actions for specific status updates.
     match /tables/{tableId} {
-      // Any staff member can read the table list.
       allow read: if isStaff();
-      
-      // Only Admins can create or delete tables.
-      allow create, delete: if isAdmin();
-      
-      // Only admins can update tables directly from the client.
-      // Other roles (receptionist, waiter) MUST use the secure server actions.
-      allow update: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Users are managed via Firebase Auth and server actions, not direct writes.
+    match /users/{userId} {
+      allow read, write: if false;
     }
   }
 }

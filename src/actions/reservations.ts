@@ -84,7 +84,10 @@ export async function seatGuests(reservationId: string, tableId: string): Promis
         const batch = admin.firestore().batch();
         
         const resRef = admin.firestore().collection('reservations').doc(reservationId);
-        batch.update(resRef, { status: "Seated" });
+        batch.update(resRef, { 
+            status: "Seated",
+            billAmount: Math.floor(Math.random() * (250 - 30 + 1)) + 30, // Random bill between $30 and $250
+        });
 
         const tableRef = admin.firestore().collection('tables').doc(tableId);
         batch.update(tableRef, { status: "Occupied" });
@@ -92,6 +95,7 @@ export async function seatGuests(reservationId: string, tableId: string): Promis
         await batch.commit();
         revalidatePath('/admin');
         revalidatePath('/admin/tables');
+        revalidatePath('/admin/payments');
         return { success: true };
     } catch (error: any) {
         console.error("Error seating guests:", error);
@@ -99,12 +103,15 @@ export async function seatGuests(reservationId: string, tableId: string): Promis
     }
 }
 
-export async function completeReservation(reservationId: string, tableId: string): Promise<ActionResult> {
+export async function completeReservation(reservationId: string, tableId: string, paymentMethod: string): Promise<ActionResult> {
     try {
         const batch = admin.firestore().batch();
         
         const resRef = admin.firestore().collection('reservations').doc(reservationId);
-        batch.update(resRef, { status: "Completed" });
+        batch.update(resRef, { 
+            status: "Completed",
+            paymentMethod: paymentMethod,
+        });
 
         const tableRef = admin.firestore().collection('tables').doc(tableId);
         batch.update(tableRef, {
@@ -116,6 +123,7 @@ export async function completeReservation(reservationId: string, tableId: string
         await batch.commit();
         revalidatePath('/admin');
         revalidatePath('/admin/tables');
+        revalidatePath('/admin/payments');
         return { success: true };
     } catch (error: any) {
         console.error("Error completing reservation:", error);
@@ -146,6 +154,7 @@ export async function cancelReservation(reservationId: string, tableId: string |
         await batch.commit();
         revalidatePath('/admin');
         revalidatePath('/admin/tables');
+        revalidatePath('/admin/payments');
         return { success: true };
     } catch (error: any) {
         console.error("Error cancelling reservation:", error);

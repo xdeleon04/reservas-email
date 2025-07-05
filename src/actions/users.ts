@@ -33,7 +33,7 @@ export async function getUsers(): Promise<AppUser[]> {
 
 type SetRoleResult = { success: boolean, error?: string };
 export async function setUserRole(uid: string, role: string): Promise<SetRoleResult> {
-    if (!['admin', 'receptionist', 'waiter'].includes(role)) {
+    if (!['admin', 'receptionist', 'waiter', 'cashier'].includes(role)) {
         return { success: false, error: 'Invalid role specified.' };
     }
     try {

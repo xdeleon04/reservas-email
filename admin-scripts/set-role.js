@@ -31,7 +31,7 @@ if (!email || !role) {
     process.exit(1);
 }
 
-const validRoles = ['admin', 'receptionist', 'waiter'];
+const validRoles = ['admin', 'receptionist', 'waiter', 'cashier'];
 if (!validRoles.includes(role)) {
     console.error(`Invalid role: ${role}. Must be one of ${validRoles.join(', ')}.`);
     process.exit(1);

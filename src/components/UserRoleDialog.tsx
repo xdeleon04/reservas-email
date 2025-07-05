@@ -64,6 +64,7 @@ export function UserRoleDialog({
                         <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="receptionist">Receptionist</SelectItem>
                         <SelectItem value="waiter">Waiter</SelectItem>
+                        <SelectItem value="cashier">Cashier</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

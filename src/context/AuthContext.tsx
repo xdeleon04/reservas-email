@@ -6,7 +6,7 @@ import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, c
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 
-type UserRole = 'admin' | 'receptionist' | 'waiter' | null;
+type UserRole = 'admin' | 'receptionist' | 'waiter' | 'cashier' | null;
 
 export type User = {
   email: string | null;
@@ -16,6 +16,7 @@ export type User = {
   isAdmin: boolean;
   isReceptionist: boolean;
   isWaiter: boolean;
+  isCashier: boolean;
 };
 
 type AuthContextType = {
@@ -53,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: role,
             isAdmin: role === 'admin',
             isReceptionist: role === 'receptionist',
-            isWaiter: role === 'waiter'
+            isWaiter: role === 'waiter',
+            isCashier: role === 'cashier'
         });
         setIsLoading(false);
       } else {
@@ -83,7 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: role,
             isAdmin: role === 'admin',
             isReceptionist: role === 'receptionist',
-            isWaiter: role === 'waiter'
+            isWaiter: role === 'waiter',
+            isCashier: role === 'cashier'
         };
 
         // The onAuthStateChanged listener will also update the global state,

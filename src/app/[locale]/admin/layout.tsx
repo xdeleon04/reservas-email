@@ -4,7 +4,7 @@
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
@@ -31,10 +31,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   
-  const isStaff = user && (user.isAdmin || user.isReceptionist || user.isWaiter);
+  const isStaff = user && (user.isAdmin || user.isReceptionist || user.isWaiter || user.isCashier);
   
   let activeTab = "tables";
   if (pathname.startsWith("/admin/users")) activeTab = "users";
+  else if (pathname.startsWith("/admin/payments")) activeTab = "payments";
   else if (pathname.startsWith("/admin") && (pathname.length === 6 || pathname.endsWith('/admin/'))) activeTab = "reservations";
 
   useEffect(() => {
@@ -42,6 +43,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       router.push('/login');
     }
   }, [user, isLoading, router, isStaff]);
+
+  const availableTabs = useMemo(() => {
+    if (!user) return [];
+    return [
+      (user.isAdmin || user.isReceptionist) && { value: "reservations", href: "/admin", label: t('reservations') },
+      (user.isAdmin || user.isReceptionist || user.isWaiter || user.isCashier) && { value: "tables", href: "/admin/tables", label: t('tables') },
+      (user.isAdmin || user.isCashier) && { value: "payments", href: "/admin/payments", label: t('payments') },
+      user.isAdmin && { value: "users", href: "/admin/users", label: t('users') }
+    ].filter(Boolean) as { value: string; href: string; label: string }[];
+  }, [user, t]);
+
 
   if (isLoading || !isStaff) {
     return (
@@ -63,21 +75,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <p className="text-muted-foreground">{t('description')}</p>
         </div>
         <Tabs value={activeTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
-            {(user.isAdmin || user.isReceptionist) && (
-              <TabsTrigger value="reservations" asChild>
-                <Link href="/admin">{t('reservations')}</Link>
+          <TabsList className={`grid w-full grid-cols-${availableTabs.length} max-w-xl`}>
+            {availableTabs.map(tab => (
+              <TabsTrigger key={tab.value} value={tab.value} asChild>
+                <Link href={tab.href}>{tab.label}</Link>
               </TabsTrigger>
-            )}
-            {/* All staff can see tables */}
-            <TabsTrigger value="tables" asChild>
-              <Link href="/admin/tables">{t('tables')}</Link>
-            </TabsTrigger>
-            {user.isAdmin && (
-              <TabsTrigger value="users" asChild>
-                <Link href="/admin/users">{t('users')}</Link>
-              </TabsTrigger>
-            )}
+            ))}
           </TabsList>
         </Tabs>
         <div className="mt-6">{children}</div>

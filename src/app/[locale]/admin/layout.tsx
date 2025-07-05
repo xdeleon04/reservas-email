@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     if (!user) return [];
     return [
       (user.isAdmin || user.isReceptionist) && { value: "reservations", href: "/admin", label: t('reservations') },
-      (user.isAdmin || user.isReceptionist || user.isWaiter || user.isCashier) && { value: "tables", href: "/admin/tables", label: t('tables') },
+      (user.isAdmin || user.isReceptionist || user.isWaiter) && { value: "tables", href: "/admin/tables", label: t('tables') },
       (user.isAdmin || user.isCashier) && { value: "payments", href: "/admin/payments", label: t('payments') },
       user.isAdmin && { value: "users", href: "/admin/users", label: t('users') }
     ].filter(Boolean) as { value: string; href: string; label: string }[];

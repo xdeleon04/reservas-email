@@ -60,6 +60,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "@/i18n/navigation";
 
 export type Table = z.infer<typeof TableSchema> & {
   id: string;
@@ -71,7 +72,8 @@ export default function AdminTablePage() {
   const t = useTranslations("AdminTablePage");
   const tStatus = useTranslations("Statuses");
   const tCard = useTranslations("AdminTablePage.tableCard");
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
 
   const [tables, setTables] = useState<Table[]>([]);
   const [filteredTables, setFilteredTables] = useState<Table[]>([]);
@@ -85,6 +87,17 @@ export default function AdminTablePage() {
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<Table | null>(null);
+
+  // Redirect if user is not authorized for this page
+  useEffect(() => {
+    if (!isAuthLoading && user && !(user.isAdmin || user.isReceptionist || user.isWaiter)) {
+      if (user.isCashier) {
+        router.replace('/admin/payments');
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [user, isAuthLoading, router]);
 
   useEffect(() => {
     const q = query(collection(db, "tables"), orderBy("name"));
@@ -177,6 +190,15 @@ export default function AdminTablePage() {
     Reserved: "secondary",
     Cleaning: "destructive",
   } as const;
+  
+  // Show loader while auth is resolving or if user is being redirected
+  if (isAuthLoading || (user && !(user.isAdmin || user.isReceptionist || user.isWaiter))) {
+    return (
+        <div className="flex justify-center items-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+    );
+  }
 
   return (
     <>
@@ -382,5 +404,3 @@ export default function AdminTablePage() {
     </>
   );
 }
-
-    

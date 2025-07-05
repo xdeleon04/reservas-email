@@ -2,35 +2,46 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isStaff() {
-        return request.auth != null && request.auth.token.role in ['admin', 'receptionist', 'waiter', 'cashier'];
+
+    // Helper Functions
+    function isAuth() {
+      return request.auth != null;
     }
+
     function isAdmin() {
-        return request.auth != null && request.auth.token.role == 'admin';
+        return isAuth() && request.auth.token.role == 'admin';
     }
 
-    // Reservations:
-    // - Customers (anonymous users) can create their own reservation.
-    // - Customers can read reservations linked to their anonymous UID.
-    // - All staff can read all reservations.
-    // - All writes are handled by secure server actions.
+    function isReceptionist() {
+        return isAuth() && request.auth.token.role == 'receptionist';
+    }
+
+    // Collection Rules
     match /reservations/{reservationId} {
-      allow create: if request.auth.token.firebase.sign_in_provider == 'anonymous' && request.resource.data.userId == request.auth.uid;
-      allow read: if isStaff() || (request.auth != null && request.auth.uid == resource.data.userId);
-      allow update, delete: if false; // Deny all direct client writes for security
+      // Any authenticated user can create a reservation for themselves.
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+
+      // Admins and Receptionists can read all reservations for the admin panel.
+      allow read: if isAdmin() || isReceptionist();
+
+      // Updates and deletes are only allowed via server actions, so deny direct client access.
+      allow update, delete: if false;
     }
 
-    // Tables:
-    // - Only Admins can create, update, or delete tables directly.
-    // - All staff members can read tables.
     match /tables/{tableId} {
-        allow read: if isStaff();
-        allow create, update, delete: if isAdmin();
+      // Any authenticated staff member can view tables.
+      allow read: if isAuth() && request.auth.token.role != null;
+      
+      // Only Admins can create/update/delete tables directly.
+      // Other roles use server actions.
+      allow create, update, delete: if isAdmin();
     }
-
-    // Users collection is not directly managed by Firestore rules.
-    // Role management is handled via secure server actions with the Admin SDK.
+    
+    match /users/{userId} {
+      // An admin can read any user, a user can read their own record.
+      allow read: if isAuth() && (isAdmin() || request.auth.uid == userId);
+      // Only admins can modify user roles.
+      allow write: if isAdmin();
+    }
   }
 }

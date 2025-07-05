@@ -19,7 +19,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { getReservationsByEmail, type ReservationReview } from "@/actions/reservations";
-import Image from "next/image";
 
 const reviewSchema = z.object({
   email: z.string().email(),
@@ -91,18 +90,8 @@ export function ReviewForm() {
           {reservations.length > 0 ? (
             <div className="space-y-6">
               {reservations.map((res) => (
-                <Card key={res.id} className="bg-card flex flex-col md:flex-row overflow-hidden shadow-md transition-shadow hover:shadow-lg">
-                  <div className="md:w-1/3 relative">
-                    <Image 
-                      src="https://placehold.co/400x300.png"
-                      alt="Restaurant dining area"
-                      width={400}
-                      height={300}
-                      className="object-cover w-full h-48 md:h-full"
-                      data-ai-hint="restaurant dining"
-                    />
-                  </div>
-                  <div className="flex flex-col p-6 md:w-2/3">
+                <Card key={res.id} className="bg-card flex flex-col overflow-hidden shadow-md transition-shadow hover:shadow-lg">
+                  <div className="flex flex-col p-6">
                     <div className="flex justify-between items-start mb-2">
                         <h3 className="text-xl font-headline font-bold text-foreground pr-4">
                           {t('results.reservationFor', {datetime: formatTimestamp(res.reservationTime)})}

@@ -10,30 +10,6 @@ const db = admin.firestore();
 type ActionResult = { success: boolean, error?: string };
 
 /**
- * Marks a table as 'Cleaning' and completes the associated reservation.
- */
-export async function markTableAsCleaning(tableId: string, reservationId: string | undefined): Promise<ActionResult> {
-    try {
-        const batch = db.batch();
-
-        const tableRef = db.collection('tables').doc(tableId);
-        batch.update(tableRef, { status: 'Cleaning' });
-
-        if (reservationId) {
-            const resRef = db.collection('reservations').doc(reservationId);
-            batch.update(resRef, { status: 'Completed' });
-        }
-
-        await batch.commit();
-        revalidatePath('/admin/tables');
-        return { success: true };
-    } catch (error: any) {
-        console.error("Error marking table as cleaning:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-/**
  * Marks a table as 'Available' and clears customer/reservation info.
  */
 export async function markTableAsAvailable(tableId: string): Promise<ActionResult> {

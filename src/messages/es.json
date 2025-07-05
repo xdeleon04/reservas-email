@@ -180,7 +180,6 @@
     "actions": {
         "edit": "Editar",
         "delete": "Eliminar",
-        "markCleaning": "Marcar en limpieza",
         "markAvailable": "Marcar como disponible",
         "markOccupied": "Marcar como Ocupada"
     },

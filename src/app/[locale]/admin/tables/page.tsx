@@ -49,7 +49,6 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { 
-    markTableAsCleaning, 
     markTableAsAvailable, 
     markTableAsOccupied 
 } from "@/actions/tables";
@@ -174,10 +173,6 @@ export default function AdminTablePage() {
   };
   
   // Action handlers that call secure server actions
-  const handleMarkCleaning = async (table: Table) => {
-    await markTableAsCleaning(table.id, table.reservationId);
-  };
-
   const handleMarkAvailable = async (table: Table) => {
     // This action works for tables that were 'Cleaning' or were 'Occupied' by a walk-in.
     await markTableAsAvailable(table.id);
@@ -296,14 +291,6 @@ export default function AdminTablePage() {
                             <>
                               <Button
                                 variant="outline"
-                                onClick={() => handleMarkCleaning(table)}
-                                disabled={table.status !== "Occupied"}
-                              >
-                                <Brush className="mr-2 h-4 w-4" />{" "}
-                                {t("actions.markCleaning")}
-                              </Button>
-                              <Button
-                                variant="outline"
                                 onClick={() => handleMarkAvailable(table)}
                                 disabled={table.status !== "Cleaning"}
                               >
@@ -323,14 +310,6 @@ export default function AdminTablePage() {
                               >
                                 <User className="mr-2 h-4 w-4" />{" "}
                                 {t("actions.markOccupied")}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                onClick={() => handleMarkCleaning(table)}
-                                disabled={table.status !== "Occupied"}
-                              >
-                                <Brush className="mr-2 h-4 w-4" />{" "}
-                                {t("actions.markCleaning")}
                               </Button>
                               <Button
                                 variant="outline"

@@ -101,25 +101,29 @@ export default function AdminTablePage() {
   }, [user, isAuthLoading, router]);
 
   useEffect(() => {
-    const q = query(collection(db, "tables"), orderBy("name"));
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const tablesData: Table[] = [];
-        querySnapshot.forEach((doc) => {
-          tablesData.push({ id: doc.id, ...doc.data() } as Table);
-        });
-        setTables(tablesData);
-        setIsLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching tables:", error);
-        setIsLoading(false);
-      }
-    );
+    if (user?.isAdmin || user?.isReceptionist || user?.isWaiter) {
+      const q = query(collection(db, "tables"), orderBy("name"));
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          const tablesData: Table[] = [];
+          querySnapshot.forEach((doc) => {
+            tablesData.push({ id: doc.id, ...doc.data() } as Table);
+          });
+          setTables(tablesData);
+          setIsLoading(false);
+        },
+        (error) => {
+          console.error("Error fetching tables:", error);
+          setIsLoading(false);
+        }
+      );
 
-    return () => unsubscribe();
-  }, []);
+      return () => unsubscribe();
+    } else {
+      if (!isAuthLoading) setIsLoading(false);
+    }
+  }, [user, isAuthLoading]);
 
   useEffect(() => {
     const lowercasedQuery = searchQuery.toLowerCase();
@@ -193,7 +197,7 @@ export default function AdminTablePage() {
   } as const;
   
   // Show loader while auth is resolving or if user is being redirected
-  if (isAuthLoading || (user && !(user.isAdmin || user.isReceptionist || user.isWaiter))) {
+  if (isLoading || isAuthLoading || (user && !(user.isAdmin || user.isReceptionist || user.isWaiter))) {
     return (
         <div className="flex justify-center items-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

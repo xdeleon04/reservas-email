@@ -78,8 +78,12 @@ export default function AdminUsersPage() {
   }
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (user?.isAdmin) {
+      fetchUsers();
+    } else {
+      if (!isAuthLoading) setIsLoading(false);
+    }
+  }, [user, isAuthLoading]);
 
   useEffect(() => {
     const lowercasedQuery = searchQuery.toLowerCase();

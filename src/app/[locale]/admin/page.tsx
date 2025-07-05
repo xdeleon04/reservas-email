@@ -32,7 +32,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, doc, query, orderBy, Timestamp, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, Timestamp } from "firebase/firestore";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,7 +51,8 @@ import { useRouter } from "@/i18n/navigation";
 import {
     confirmReservation,
     seatGuests,
-    cancelReservation
+    cancelReservation,
+    deleteReservation
 } from "@/actions/reservations";
 
 type Reservation = {
@@ -163,9 +164,7 @@ export default function AdminReservationPage() {
   
   const handleDeleteConfirm = async () => {
     if (reservationToDelete) {
-      // Deleting a reservation doesn't affect tables, so this can remain a client-side action
-      // for authorized users (admin/receptionist) as defined in the rules.
-      await deleteDoc(doc(db, "reservations", reservationToDelete.id));
+      await deleteReservation(reservationToDelete.id, reservationToDelete.assignedTableId || null);
     }
     setIsDeleteDialogOpen(false);
     setReservationToDelete(null);
@@ -262,11 +261,15 @@ export default function AdminReservationPage() {
                               <XCircle className="mr-2 h-4 w-4" />
                               {t('actions.cancel')}
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onSelect={() => handleDeleteClick(res)}>
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {t('actions.delete')}
-                          </DropdownMenuItem>
+                          {user?.isAdmin && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onSelect={() => handleDeleteClick(res)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('actions.delete')}
+                                </DropdownMenuItem>
+                            </>
+                          )}
                           </DropdownMenuContent>
                       </DropdownMenu>
                       </TableCell>

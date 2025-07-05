@@ -164,3 +164,31 @@ export async function cancelReservation(reservationId: string, tableId: string |
         return { success: false, error: error.message };
     }
 }
+
+export async function deleteReservation(reservationId: string, tableId: string | null): Promise<ActionResult> {
+    try {
+        const batch = admin.firestore().batch();
+
+        const resRef = admin.firestore().collection('reservations').doc(reservationId);
+        batch.delete(resRef);
+
+        if (tableId) {
+            const tableRef = admin.firestore().collection('tables').doc(tableId);
+            batch.update(tableRef, {
+                status: "Available",
+                customerName: null,
+                reservationId: null,
+                billAmount: null,
+            });
+        }
+
+        await batch.commit();
+        revalidatePath('/admin');
+        revalidatePath('/admin/tables');
+        revalidatePath('/admin/payments');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting reservation:", error);
+        return { success: false, error: error.message };
+    }
+}

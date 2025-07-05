@@ -1,12 +1,11 @@
-
 "use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Clock, Users } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Loader2, Users } from "lucide-react";
+import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { getReservationsByEmail, type ReservationReview } from "@/actions/reservations";
+import Image from "next/image";
 
 const reviewSchema = z.object({
   email: z.string().email(),
@@ -89,28 +89,44 @@ export function ReviewForm() {
             {t('results.title', {count: reservations.length})}
           </h2>
           {reservations.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {reservations.map((res) => (
-                <Card key={res.id} className="bg-background">
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-center text-base">
-                        <span>{t('results.bookedOn', {date: formatTimestamp(res.createdAt).split(',')[0]})}</span>
+                <Card key={res.id} className="bg-card flex flex-col md:flex-row overflow-hidden shadow-md transition-shadow hover:shadow-lg">
+                  <div className="md:w-1/3 relative">
+                    <Image 
+                      src="https://placehold.co/400x300.png"
+                      alt="Restaurant dining area"
+                      width={400}
+                      height={300}
+                      className="object-cover w-full h-48 md:h-full"
+                      data-ai-hint="restaurant dining"
+                    />
+                  </div>
+                  <div className="flex flex-col p-6 md:w-2/3">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl font-headline font-bold text-foreground pr-4">
+                          {t('results.reservationFor', {datetime: formatTimestamp(res.reservationTime)})}
+                        </h3>
                         <Badge variant={
                                 res.status === 'Confirmed' || res.status === 'Seated' ? 'default' 
                                 : res.status === 'Cancelled' ? 'destructive' 
                                 : res.status === 'Completed' ? 'outline'
                                 : 'secondary'
                             }
-                            className="text-sm"
+                            className="text-sm whitespace-nowrap"
                         >
                             {tStatus(res.status)}
                         </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-muted-foreground space-y-2">
-                     <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> {t('results.reservationFor', {datetime: formatTimestamp(res.reservationTime)})}</p>
-                     <p className="flex items-center"><Users className="mr-2 h-4 w-4"/> {t('results.guests', {count: res.guests})}</p>
-                  </CardContent>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {t('results.bookedOn', {date: new Date(res.createdAt).toLocaleDateString()})}
+                    </p>
+            
+                    <div className="mt-auto flex items-center text-muted-foreground pt-4 border-t">
+                      <Users className="mr-2 h-4 w-4"/>
+                      <span>{t('results.guests', {count: res.guests})}</span>
+                    </div>
+                  </div>
                 </Card>
               ))}
             </div>

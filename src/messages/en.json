@@ -152,6 +152,7 @@
         "toggleMenu": "Toggle menu",
         "confirm": "Confirm",
         "seat": "Seat Guests",
+        "complete": "Mark as Completed",
         "cancel": "Cancel",
         "delete": "Delete"
     },
@@ -180,6 +181,7 @@
     "actions": {
         "edit": "Edit",
         "delete": "Delete",
+        "markCleaning": "Mark as Cleaning",
         "markAvailable": "Mark as Available",
         "markOccupied": "Mark as Occupied"
     },
@@ -277,7 +279,7 @@
     "available": "Available",
     "occupied": "Occupied",
     "reserved": "Reserved",
-    "cleaning": "Cleaning",
+    "cleaning": "Needs Cleaning",
     "cancel": "Cancel",
     "save": "Save",
     "validation": {
@@ -305,7 +307,7 @@
     "Available": "Available",
     "Occupied": "Occupied",
     "Reserved": "Reserved",
-    "Cleaning": "Cleaning"
+    "Cleaning": "Needs Cleaning"
   },
   "Metadata": {
     "title": "Reservas Email",

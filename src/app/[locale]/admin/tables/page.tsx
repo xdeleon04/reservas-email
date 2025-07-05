@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -187,7 +188,7 @@ export default function AdminTablePage() {
     Available: "outline",
     Occupied: "default",
     Reserved: "secondary",
-    Cleaning: "destructive",
+    Cleaning: "secondary",
   } as const;
   
   // Show loader while auth is resolving or if user is being redirected

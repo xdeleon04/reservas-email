@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <p className="text-muted-foreground">{t('description')}</p>
         </div>
         <Tabs value={activeTab} className="w-full">
-          <TabsList className={`grid w-full grid-cols-${availableTabs.length} max-w-xl`}>
+          <TabsList className="grid w-full max-w-xl grid-flow-col auto-cols-fr">
             {availableTabs.map(tab => (
               <TabsTrigger key={tab.value} value={tab.value} asChild>
                 <Link href={tab.href}>{tab.label}</Link>

@@ -37,7 +37,7 @@ export function OrderPaymentDialog({
   setIsOpen,
   order,
 }: OrderPaymentDialogProps) {
-  const t = useTranslations('PaymentDialog');
+  const t = useTranslations('OrderPaymentDialog');
   const { toast } = useToast();
 
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
@@ -127,7 +127,7 @@ export function OrderPaymentDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-            <div className="font-semibold">Items</div>
+            <div className="font-semibold">{t('itemsHeader')}</div>
             <div className="space-y-2">
                 {unpaidItems.map(item => (
                     <div key={item.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
@@ -142,18 +142,18 @@ export function OrderPaymentDialog({
                         <span className="text-sm font-mono">{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                 ))}
-                {unpaidItems.length === 0 && <p className="text-sm text-muted-foreground">All items paid.</p>}
+                {unpaidItems.length === 0 && <p className="text-sm text-muted-foreground">{t('allItemsPaid')}</p>}
             </div>
             <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleSelectAllUnpaid} disabled={unpaidItems.length === 0}>Select All Unpaid</Button>
-                <Button variant="outline" size="sm" onClick={handlePayRemainingBalance} disabled={remainingBalance <= 0}>Pay Full Balance</Button>
+                <Button variant="outline" size="sm" onClick={handleSelectAllUnpaid} disabled={unpaidItems.length === 0}>{t('selectAllUnpaid')}</Button>
+                <Button variant="outline" size="sm" onClick={handlePayRemainingBalance} disabled={remainingBalance <= 0}>{t('payFullBalance')}</Button>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="custom-amount">Custom Payment Amount</Label>
+                <Label htmlFor="custom-amount">{t('customAmount')}</Label>
                 <Input 
                     id="custom-amount" 
                     type="number" 
-                    placeholder="e.g. 20.50" 
+                    placeholder={t('customAmountPlaceholder')}
                     value={customAmount}
                     onChange={(e) => {
                         setSelectedItemIds([]);
@@ -175,11 +175,11 @@ export function OrderPaymentDialog({
             </div>
             <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between font-medium text-lg">
-                    <span>Total To Pay:</span>
+                    <span>{t('totalToPay')}</span>
                     <span>{formatCurrency(paymentAmount)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Remaining Balance:</span>
+                    <span>{t('remainingBalance')}</span>
                     <span>{formatCurrency(remainingBalance - paymentAmount)}</span>
                 </div>
             </div>

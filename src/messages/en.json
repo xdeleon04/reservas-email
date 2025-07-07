@@ -249,7 +249,8 @@
     "tableInfo": "Table: {tableName}",
     "customerInfo": "Customer: {customerName}",
     "billAmount": "Bill: ${amount}",
-    "processPayment": "Process Payment"
+    "processPayment": "Process Payment",
+    "addItem": "Add Item"
   },
     "AdminMenuPage": {
     "cardTitle": "Menu Management",
@@ -290,10 +291,17 @@
       "error": "An error occurred."
     }
   },
-  "PaymentDialog": {
+  "OrderPaymentDialog": {
     "title": "Process Payment for Table {tableName}",
     "description": "Process the bill for customer {customerName}.",
-    "billAmount": "Bill Amount",
+    "itemsHeader": "Items",
+    "allItemsPaid": "All items have been paid.",
+    "selectAllUnpaid": "Select All Unpaid",
+    "payFullBalance": "Pay Full Balance",
+    "customAmount": "Custom Payment Amount",
+    "customAmountPlaceholder": "e.g. 20.50",
+    "totalToPay": "Total To Pay:",
+    "remainingBalance": "Remaining Balance:",
     "paymentMethod": "Payment Method",
     "cash": "Cash",
     "card": "Card",
@@ -305,6 +313,18 @@
       "successDescription": "The payment has been processed and the table is now marked for cleaning.",
       "errorTitle": "Payment Failed",
       "errorDescription": "There was an error processing the payment. Please try again."
+    }
+  },
+  "AddItemDialog": {
+    "title": "Add Item to Order for {tableName}",
+    "description": "Select items from the menu to add to this order.",
+    "searchPlaceholder": "Search for a menu item...",
+    "add": "Add",
+    "noResults": "No menu items found.",
+    "toast": {
+      "successTitle": "Item Added",
+      "successDescription": "Added {itemName} to the order for {orderName}.",
+      "errorTitle": "Failed to Add Item"
     }
   },
   "TableDialog": {

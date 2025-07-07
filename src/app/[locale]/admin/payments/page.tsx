@@ -26,21 +26,24 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { OrderPaymentDialog } from "@/components/OrderPaymentDialog";
 import { Order, MenuItem } from "@/lib/models";
-import { addItemToOrder } from "@/actions/orders";
-import { useToast } from "@/hooks/use-toast";
+import { AddItemToOrderDialog } from "@/components/AddItemToOrderDialog";
 
 export default function AdminPaymentPage() {
   const t = useTranslations("AdminPaymentPage");
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  const [orderForPayment, setOrderForPayment] = useState<Order | null>(null);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+
+  const [orderForAddItem, setOrderForAddItem] = useState<Order | null>(null);
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+
 
   // Redirect if user is not authorized
   useEffect(() => {
@@ -93,32 +96,13 @@ export default function AdminPaymentPage() {
   }, [orders, searchQuery]);
 
   const handleOpenPaymentDialog = (order: Order) => {
-    setSelectedOrder(order);
-    setIsDialogOpen(true);
+    setOrderForPayment(order);
+    setIsPaymentDialogOpen(true);
   };
-
-  const handleAddItem = async (orderId: string) => {
-    // For simplicity, we add a random menu item. A real UI would have a selection dialog.
-    if (menuItems.length === 0) {
-        toast({ variant: 'destructive', title: "No Menu Items", description: "Please add items to the menu first."});
-        return;
-    }
-    const randomItem = menuItems[Math.floor(Math.random() * menuItems.length)];
-    
-    // Create a plain object to avoid serialization issues with Firestore Timestamps
-    const plainMenuItem: MenuItem = {
-        id: randomItem.id,
-        name: randomItem.name,
-        price: randomItem.price,
-        category: randomItem.category
-    };
-
-    const result = await addItemToOrder(orderId, plainMenuItem, 1);
-    if(result.success) {
-        toast({ title: "Item Added", description: `Added ${randomItem.name} to the order.`});
-    } else {
-        toast({ variant: 'destructive', title: "Error", description: result.error});
-    }
+  
+  const handleOpenAddItemDialog = (order: Order) => {
+    setOrderForAddItem(order);
+    setIsAddItemDialogOpen(true);
   };
 
   const formatCurrency = (value: number) => {
@@ -181,9 +165,9 @@ export default function AdminPaymentPage() {
                         {t('processPayment')}
                         </Button>
                     )}
-                    <Button variant="outline" className="w-full" onClick={() => handleAddItem(order.id)}>
+                    <Button variant="outline" className="w-full" onClick={() => handleOpenAddItemDialog(order)}>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Item
+                      {t('addItem')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -193,11 +177,20 @@ export default function AdminPaymentPage() {
         </CardContent>
       </Card>
 
-      {selectedOrder && (
+      {orderForPayment && (
         <OrderPaymentDialog
-            isOpen={isDialogOpen}
-            setIsOpen={setIsDialogOpen}
-            order={selectedOrder}
+            isOpen={isPaymentDialogOpen}
+            setIsOpen={setIsPaymentDialogOpen}
+            order={orderForPayment}
+        />
+      )}
+      
+      {orderForAddItem && (
+        <AddItemToOrderDialog
+            isOpen={isAddItemDialogOpen}
+            setIsOpen={setIsAddItemDialogOpen}
+            order={orderForAddItem}
+            menuItems={menuItems}
         />
       )}
     </>

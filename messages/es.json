@@ -288,12 +288,12 @@
     "tableInfo": "Mesa: {tableName}",
     "customerInfo": "Cliente: {customerName}",
     "billAmount": "Cuenta: ${amount}",
-    "processPayment": "Procesar Pago"
+    "processPayment": "Procesar Pago",
+    "addItem": "Añadir Artículo"
   },
-  "PaymentDialog": {
+  "OrderPaymentDialog": {
     "title": "Procesar Pago para Mesa {tableName}",
     "description": "Procesar la cuenta para el cliente {customerName}.",
-    "billAmount": "Monto de la Cuenta",
     "paymentMethod": "Método de Pago",
     "cash": "Efectivo",
     "card": "Tarjeta",
@@ -305,6 +305,18 @@
       "successDescription": "El pago ha sido procesado y la mesa ahora está marcada para limpieza.",
       "errorTitle": "Fallo en el Pago",
       "errorDescription": "Hubo un error al procesar el pago. Por favor, inténtalo de nuevo."
+    }
+  },
+  "AddItemDialog": {
+    "title": "Añadir Artículo a la Comanda de {tableName}",
+    "description": "Selecciona artículos del menú para añadir a esta comanda.",
+    "searchPlaceholder": "Buscar un artículo del menú...",
+    "add": "Añadir",
+    "noResults": "No se encontraron artículos en el menú.",
+    "toast": {
+      "successTitle": "Artículo Añadido",
+      "successDescription": "Se ha añadido {itemName} a la comanda de {orderName}.",
+      "errorTitle": "Error al Añadir Artículo"
     }
   },
   "TableDialog": {

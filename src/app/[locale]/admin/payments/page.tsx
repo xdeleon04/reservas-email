@@ -44,7 +44,7 @@ export default function AdminPaymentPage() {
 
   // Redirect if user is not authorized
   useEffect(() => {
-    if (!isAuthLoading && user && !user.isAdmin && !user.isCashier && !user.isReceptionist) {
+    if (!isAuthLoading && user && !user.isAdmin && !user.isCashier && !user.isReceptionist && !user.isWaiter) {
       router.replace("/admin/tables");
     }
   }, [user, isAuthLoading, router]);
@@ -175,10 +175,12 @@ export default function AdminPaymentPage() {
                      </div>
                   </CardContent>
                   <CardFooter className="flex flex-col items-stretch gap-2">
-                     <Button className="w-full" onClick={() => handleOpenPaymentDialog(order)}>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      {t('processPayment')}
-                    </Button>
+                    {(user?.isAdmin || user?.isReceptionist || user?.isCashier) && (
+                        <Button className="w-full" onClick={() => handleOpenPaymentDialog(order)}>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        {t('processPayment')}
+                        </Button>
+                    )}
                     <Button variant="outline" className="w-full" onClick={() => handleAddItem(order.id)}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Add Item

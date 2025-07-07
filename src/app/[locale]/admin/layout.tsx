@@ -53,8 +53,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       { value: "dashboard", href: "/admin/dashboard", label: t('dashboard'), roles: ['admin'] },
       { value: "reservations", href: "/admin", label: t('reservations'), roles: ['admin', 'receptionist'] },
       { value: "tables", href: "/admin/tables", label: t('tables'), roles: ['admin', 'receptionist', 'waiter'] },
-      { value: "payments", href: "/admin/payments", label: t('payments'), roles: ['admin', 'cashier', 'receptionist'] },
-      { value: "menu", href: "/admin/menu", label: t('menu'), roles: ['admin'] },
+      { value: "payments", href: "/admin/payments", label: t('payments'), roles: ['admin', 'cashier', 'receptionist', 'waiter'] },
+      { value: "menu", href: "/admin/menu", label: t('menu'), roles: ['admin', 'waiter'] },
       { value: "users", href: "/admin/users", label: t('users'), roles: ['admin'] }
     ];
 

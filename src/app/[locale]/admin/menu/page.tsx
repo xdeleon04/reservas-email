@@ -68,13 +68,13 @@ export default function AdminMenuPage() {
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
 
   useEffect(() => {
-    if (!isAuthLoading && !user?.isAdmin) {
+    if (!isAuthLoading && !user?.isAdmin && !user?.isWaiter) {
       router.replace('/admin/tables');
     }
   }, [user, isAuthLoading, router]);
 
   useEffect(() => {
-    if (user?.isAdmin) {
+    if (user?.isAdmin || user?.isWaiter) {
       const q = query(collection(db, "menuItems"), orderBy("category"), orderBy("name"));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
@@ -141,7 +141,7 @@ export default function AdminMenuPage() {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
   }
 
-  if (isLoading || isAuthLoading || !user?.isAdmin) {
+  if (isLoading || isAuthLoading || (!user?.isAdmin && !user?.isWaiter)) {
     return (
       <div className="flex justify-center items-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -158,10 +158,12 @@ export default function AdminMenuPage() {
               <CardTitle>{t('cardTitle')}</CardTitle>
               <CardDescription>{t('cardDescription')}</CardDescription>
             </div>
-            <Button onClick={handleAdd} className="w-full sm:w-auto">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              {t('addItem')}
-            </Button>
+            {user?.isAdmin && (
+              <Button onClick={handleAdd} className="w-full sm:w-auto">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {t('addItem')}
+              </Button>
+            )}
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -191,25 +193,27 @@ export default function AdminMenuPage() {
                   <TableCell>{item.category}</TableCell>
                   <TableCell>{formatCurrency(item.price)}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onSelect={() => handleEdit(item)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" onSelect={() => handleDeleteClick(item)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {user?.isAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => handleEdit(item)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive" onSelect={() => handleDeleteClick(item)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

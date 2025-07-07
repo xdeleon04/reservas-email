@@ -134,7 +134,9 @@
     "reservations": "Reservas",
     "tables": "Mesas",
     "users": "Usuarios",
-    "payments": "Pagos"
+    "payments": "Pagos",
+    "menu": "Menú",
+    "dashboard": "Dashboard"
   },
   "AdminReservationPage": {
     "cardTitle": "Todas las Reservas",
@@ -239,11 +241,50 @@
       "deleteErrorTitle": "Fallo al Eliminar"
     }
   },
+    "AdminMenuPage": {
+    "cardTitle": "Gestión de Menú",
+    "cardDescription": "Añade, edita y elimina platos del menú.",
+    "addItem": "Añadir Plato",
+    "searchPlaceholder": "Buscar por nombre o categoría...",
+    "tableHead": {
+      "name": "Nombre",
+      "category": "Categoría",
+      "price": "Precio"
+    },
+    "noItems": "No se encontraron platos en el menú. Añade uno para empezar.",
+    "noResults": "No se encontraron resultados para tu búsqueda.",
+    "deleteDialog": {
+      "title": "¿Estás seguro?",
+      "description": "Esto eliminará permanentemente el plato \"{name}\".",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "dialog": {
+      "addTitle": "Añadir Nuevo Plato",
+      "addDescription": "Introduce los detalles para el nuevo plato.",
+      "editTitle": "Editar Plato",
+      "editDescription": "Actualiza los detalles de este plato.",
+      "name": "Nombre del Plato",
+      "namePlaceholder": "ej. Filete Mignon",
+      "category": "Categoría",
+      "categoryPlaceholder": "ej. Platos Fuertes",
+      "price": "Precio",
+      "pricePlaceholder": "25.99",
+      "cancel": "Cancelar",
+      "save": "Guardar"
+    },
+    "toast": {
+      "addSuccess": "Plato añadido correctamente.",
+      "updateSuccess": "Plato actualizado correctamente.",
+      "deleteSuccess": "Plato eliminado.",
+      "error": "Ocurrió un error."
+    }
+  },
   "AdminPaymentPage": {
     "cardTitle": "Procesar Pagos",
-    "cardDescription": "Ver mesas ocupadas y procesar las cuentas de los clientes.",
+    "cardDescription": "Ver comandas abiertas y procesar las cuentas de los clientes.",
     "searchPlaceholder": "Buscar por nombre de mesa o cliente...",
-    "noOccupiedTables": "No hay mesas ocupadas con pagos pendientes.",
+    "noOccupiedTables": "No se encontraron comandas abiertas.",
     "tableInfo": "Mesa: {tableName}",
     "customerInfo": "Cliente: {customerName}",
     "billAmount": "Cuenta: ${amount}",
@@ -314,5 +355,3 @@
     "description": "Reservas de mesa sin esfuerzo."
   }
 }
-
-    

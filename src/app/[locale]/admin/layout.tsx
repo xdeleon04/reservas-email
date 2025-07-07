@@ -36,6 +36,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   let activeTab = "tables";
   if (pathname.startsWith("/admin/users")) activeTab = "users";
   else if (pathname.startsWith("/admin/payments")) activeTab = "payments";
+  else if (pathname.startsWith("/admin/menu")) activeTab = "menu";
+  else if (pathname.startsWith("/admin/dashboard")) activeTab = "dashboard";
   else if (pathname.startsWith("/admin") && (pathname.length === 6 || pathname.endsWith('/admin/'))) activeTab = "reservations";
 
   useEffect(() => {
@@ -46,12 +48,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const availableTabs = useMemo(() => {
     if (!user) return [];
-    return [
-      (user.isAdmin || user.isReceptionist) && { value: "reservations", href: "/admin", label: t('reservations') },
-      (user.isAdmin || user.isReceptionist || user.isWaiter) && { value: "tables", href: "/admin/tables", label: t('tables') },
-      (user.isAdmin || user.isCashier) && { value: "payments", href: "/admin/payments", label: t('payments') },
-      user.isAdmin && { value: "users", href: "/admin/users", label: t('users') }
-    ].filter(Boolean) as { value: string; href: string; label: string }[];
+    // Define all possible tabs
+    const allTabs = [
+      { value: "dashboard", href: "/admin/dashboard", label: t('dashboard'), roles: ['admin'] },
+      { value: "reservations", href: "/admin", label: t('reservations'), roles: ['admin', 'receptionist'] },
+      { value: "tables", href: "/admin/tables", label: t('tables'), roles: ['admin', 'receptionist', 'waiter'] },
+      { value: "payments", href: "/admin/payments", label: t('payments'), roles: ['admin', 'cashier', 'receptionist'] },
+      { value: "menu", href: "/admin/menu", label: t('menu'), roles: ['admin'] },
+      { value: "users", href: "/admin/users", label: t('users'), roles: ['admin'] }
+    ];
+
+    // Filter tabs based on user role
+    return allTabs.filter(tab => user.role && tab.roles.includes(user.role));
+
   }, [user, t]);
 
 
@@ -75,7 +84,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <p className="text-muted-foreground">{t('description')}</p>
         </div>
         <Tabs value={activeTab} className="w-full">
-          <TabsList className="grid w-full max-w-xl grid-flow-col auto-cols-fr">
+          <TabsList className="grid w-full max-w-2xl grid-flow-col auto-cols-fr">
             {availableTabs.map(tab => (
               <TabsTrigger key={tab.value} value={tab.value} asChild>
                 <Link href={tab.href}>{tab.label}</Link>

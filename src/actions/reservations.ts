@@ -10,7 +10,7 @@ export type ReservationReview = {
   name: string;
   reservationTime: string; // ISO String
   createdAt: string; // ISO String
-  status: "Confirmed" | "Pending" | "Cancelled" | "Seated" | "Completed";
+  status: "Pending" | "Confirmed" | "Seated" | "Completed" | "Cancelled";
   guests: number;
 };
 
@@ -85,28 +85,35 @@ export async function seatGuests(reservationId: string, tableId: string): Promis
         const batch = db.batch();
 
         const resRef = db.collection('reservations').doc(reservationId);
-        
-        // Get reservation data to retrieve the name
         const reservationDoc = await resRef.get();
-        if (!reservationDoc.exists) {
-            throw new Error("Reservation not found.");
-        }
-        const reservationData = reservationDoc.data();
-        const customerName = reservationData?.name;
-        const billAmount = Math.floor(Math.random() * (250 - 30 + 1)) + 30; // Random bill between $30 and $250
+        if (!reservationDoc.exists) throw new Error("Reservation not found.");
+        const reservationData = reservationDoc.data()!;
 
-        // Update reservation
+        // 1. Create a new Order
+        const orderRef = db.collection('orders').doc();
+        batch.set(orderRef, {
+            tableId,
+            tableName: reservationData.assignedTableName,
+            customerName: reservationData.name,
+            reservationId,
+            items: [],
+            status: 'open',
+            total: 0,
+            amountPaid: 0,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // 2. Update Reservation status and link to Order
         batch.update(resRef, { 
             status: "Seated",
-            billAmount: billAmount,
+            orderId: orderRef.id,
         });
 
-        // Update table with denormalized data for payment processing
+        // 3. Update Table status and link to Order
         const tableRef = db.collection('tables').doc(tableId);
         batch.update(tableRef, { 
             status: "Occupied",
-            customerName: customerName,
-            billAmount: billAmount,
+            orderId: orderRef.id,
         });
 
         await batch.commit();
@@ -138,6 +145,7 @@ export async function completeReservation(tableId: string, paymentMethod: string
             customerName: null,
             reservationId: null,
             billAmount: null,
+            orderId: null,
         });
 
         await batch.commit();
@@ -196,6 +204,7 @@ export async function deleteReservation(reservationId: string, tableId: string |
                 customerName: null,
                 reservationId: null,
                 billAmount: null,
+                orderId: null,
             });
         }
 

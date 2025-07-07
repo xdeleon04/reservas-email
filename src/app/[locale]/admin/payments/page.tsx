@@ -104,7 +104,16 @@ export default function AdminPaymentPage() {
         return;
     }
     const randomItem = menuItems[Math.floor(Math.random() * menuItems.length)];
-    const result = await addItemToOrder(orderId, randomItem, 1);
+    
+    // Create a plain object to avoid serialization issues with Firestore Timestamps
+    const plainMenuItem: MenuItem = {
+        id: randomItem.id,
+        name: randomItem.name,
+        price: randomItem.price,
+        category: randomItem.category
+    };
+
+    const result = await addItemToOrder(orderId, plainMenuItem, 1);
     if(result.success) {
         toast({ title: "Item Added", description: `Added ${randomItem.name} to the order.`});
     } else {

@@ -8,7 +8,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import {NextIntlClientProvider} from 'next-intl';
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-export async function generateMetadata({params: {locale}}: {params: {locale: string}}): Promise<Metadata> {
+export async function generateMetadata({params}: {params: {locale: string}}): Promise<Metadata> {
+  const { locale } = params;
   setRequestLocale(locale);
   const t = await getTranslations('Metadata');
  
@@ -20,11 +21,12 @@ export async function generateMetadata({params: {locale}}: {params: {locale: str
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params,
 }: Readonly<{
   children: React.ReactNode;
   params: {locale: string};
 }>) {
+  const { locale } = params;
   setRequestLocale(locale);
   const messages = await getMessages();
 

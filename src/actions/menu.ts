@@ -8,10 +8,10 @@ import type { MenuItem } from '@/lib/models';
 
 const db = admin.firestore();
 
-export const MenuItemSchema = z.object({
+const MenuItemSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
   category: z.string().min(3, "Category is required."),
-  price: z.coerce.number().min(0, "Price must be a positive number."),
+  price: z.coerce.number().min(0.01, "Price must be greater than 0."),
 });
 
 type ActionResult = { success: boolean, error?: string };

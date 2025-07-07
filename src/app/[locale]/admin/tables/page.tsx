@@ -28,10 +28,6 @@ import { db } from "@/lib/firebase";
 import {
   collection,
   onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
   query,
   orderBy,
 } from "firebase/firestore";
@@ -50,6 +46,9 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { 
+    addTable,
+    updateTable,
+    deleteTable,
     markTableAsAvailable, 
     markTableAsOccupied 
 } from "@/actions/tables";
@@ -60,12 +59,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export type Table = z.infer<typeof TableSchema> & {
   id: string;
   customerName?: string;
   reservationId?: string;
-  billAmount?: number;
+  orderId?: string;
 };
 
 export default function AdminTablePage() {
@@ -74,6 +74,7 @@ export default function AdminTablePage() {
   const tCard = useTranslations("AdminTablePage.tableCard");
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [tables, setTables] = useState<Table[]>([]);
   const [filteredTables, setFilteredTables] = useState<Table[]>([]);
@@ -88,7 +89,6 @@ export default function AdminTablePage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<Table | null>(null);
 
-  // Redirect if user is not authorized for this page
   useEffect(() => {
     if (!isAuthLoading && user && !(user.isAdmin || user.isReceptionist || user.isWaiter)) {
       if (user.isCashier) {
@@ -157,30 +157,39 @@ export default function AdminTablePage() {
 
   const handleDeleteConfirm = async () => {
     if (tableToDelete) {
-      await deleteDoc(doc(db, "tables", tableToDelete.id));
+      const result = await deleteTable(tableToDelete.id);
+      if (result.success) {
+        toast({ title: "Table Deleted", description: `Table "${tableToDelete.name}" has been deleted.` });
+      } else {
+        toast({ variant: "destructive", title: "Deletion Failed", description: result.error });
+      }
     }
     setIsDeleteDialogOpen(false);
     setTableToDelete(null);
   };
 
-  const handleSave = async (tableData: z.infer<typeof TableSchema>) => {
-    // This function is only for admins, via the dialog.
+  const handleSave = async (tableData: z.infer<typeof TableSchema>): Promise<boolean> => {
+    let result: { success: boolean, error?: string };
     if (editingTable) {
-      const tableRef = doc(db, "tables", editingTable.id);
-      await updateDoc(tableRef, tableData);
+      result = await updateTable(editingTable.id, tableData);
     } else {
-      await addDoc(collection(db, "tables"), tableData);
+      result = await addTable(tableData);
+    }
+
+    if (result.success) {
+        toast({ title: "Success", description: `Table has been ${editingTable ? 'updated' : 'added'}.`});
+        return true;
+    } else {
+        toast({ variant: "destructive", title: "Error", description: result.error});
+        return false;
     }
   };
   
-  // Action handlers that call secure server actions
   const handleMarkAvailable = async (table: Table) => {
-    // This action works for tables that were 'Cleaning' or were 'Occupied' by a walk-in.
     await markTableAsAvailable(table.id);
   };
 
   const handleMarkOccupied = async (table: Table) => {
-    // This action is for walk-in customers.
     await markTableAsOccupied(table.id, tCard('walkInCustomer'));
   };
 
@@ -191,7 +200,6 @@ export default function AdminTablePage() {
     Cleaning: "secondary",
   } as const;
   
-  // Show loader while auth is resolving or if user is being redirected
   if (isLoading || isAuthLoading || (user && !(user.isAdmin || user.isReceptionist || user.isWaiter))) {
     return (
         <div className="flex justify-center items-center p-8">
@@ -287,7 +295,6 @@ export default function AdminTablePage() {
                           </div>
                         </CardContent>
                         <CardFooter className="flex flex-col items-stretch gap-2">
-                          {/* Waiter Actions */}
                           {user?.isWaiter && (
                             <>
                               <Button
@@ -301,7 +308,6 @@ export default function AdminTablePage() {
                             </>
                           )}
 
-                          {/* Receptionist Actions */}
                           {user?.isReceptionist && (
                             <>
                               <Button
@@ -323,7 +329,6 @@ export default function AdminTablePage() {
                             </>
                           )}
 
-                          {/* Admin Actions */}
                           {user?.isAdmin && (
                             <div className="flex gap-2">
                               <Button

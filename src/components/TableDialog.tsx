@@ -22,10 +22,11 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import type { Table } from "@/app/[locale]/admin/tables/page";
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 
 export const TableSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
@@ -36,12 +37,13 @@ export const TableSchema = z.object({
 type TableDialogProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onSave: (data: z.infer<typeof TableSchema>) => void;
+  onSave: (data: z.infer<typeof TableSchema>) => Promise<boolean>;
   table?: Table;
 };
 
 export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogProps) {
   const t = useTranslations('TableDialog');
+  const [isSaving, setIsSaving] = useState(false);
   
   const form = useForm<z.infer<typeof TableSchema>>({
     resolver: zodResolver(
@@ -66,9 +68,13 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
     }
   }, [table, form, isOpen]);
 
-  const handleSubmit = (values: z.infer<typeof TableSchema>) => {
-    onSave(values);
-    setIsOpen(false);
+  const handleSubmit = async (values: z.infer<typeof TableSchema>) => {
+    setIsSaving(true);
+    const success = await onSave(values);
+    if (success) {
+      setIsOpen(false);
+    }
+    setIsSaving(false);
   };
 
   return (
@@ -127,7 +133,7 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
                     <SelectContent>
                       <SelectItem value="Available">{t('available')}</SelectItem>
                       <SelectItem value="Occupied">{t('occupied')}</SelectItem>
-                      <SelectItem value="Reserved">{t('reserved')}</SelectItem>
+                      <SelectItem value="Reserved" disabled>{t('reserved')}</SelectItem>
                       <SelectItem value="Cleaning">{t('cleaning')}</SelectItem>
                     </SelectContent>
                   </Select>
@@ -141,7 +147,8 @@ export function TableDialog({ isOpen, setIsOpen, onSave, table }: TableDialogPro
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             {t('cancel')}
           </Button>
-          <Button type="submit" form="table-form">
+          <Button type="submit" form="table-form" disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('save')}
           </Button>
         </DialogFooter>

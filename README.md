@@ -130,6 +130,19 @@ node admin-scripts/set-role.js user@example.com receptionist
 node admin-scripts/set-role.js user@example.com waiter
 ```
 
+### Seeding the Database (Optional)
+
+To quickly populate your application with sample data for tables and menu items, you can run the seed script. This is useful for development and testing purposes.
+
+**Note:** The script will only add data if the `tables` and `menuItems` collections in your Firestore are empty.
+
+1.  Make sure your `.env.local` file is correctly configured with your Firebase Admin credentials.
+2.  Run the following command from your project's root directory:
+    ```sh
+    npm run db:seed
+    ```
+    This will add a variety of restaurant tables and a sample menu to your database.
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -138,4 +151,5 @@ In the project directory, you can run:
 -   `npm run build`: Builds the app for production.
 -   `npm run start`: Starts a production server.
 -   `npm run lint`: Lints the code using Next.js's built-in ESLint configuration.
+-   `npm run db:seed`: Populates the database with sample tables and menu items.
 

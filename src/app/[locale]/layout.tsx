@@ -8,8 +8,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import {NextIntlClientProvider} from 'next-intl';
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-export async function generateMetadata({params}: {params: {locale: string}}): Promise<Metadata> {
-  setRequestLocale(params.locale);
+export async function generateMetadata({params: {locale}}: {params: {locale: string}}): Promise<Metadata> {
+  setRequestLocale(locale);
   const t = await getTranslations('Metadata');
  
   return {
@@ -20,16 +20,16 @@ export async function generateMetadata({params}: {params: {locale: string}}): Pr
 
 export default async function LocaleLayout({
   children,
-  params
+  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
   params: {locale: string};
 }>) {
-  setRequestLocale(params.locale);
+  setRequestLocale(locale);
   const messages = await getMessages();
 
   return (
-    <html lang={params.locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

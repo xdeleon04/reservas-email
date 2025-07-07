@@ -134,7 +134,9 @@
     "reservations": "Reservations",
     "tables": "Tables",
     "users": "Users",
-    "payments": "Payments"
+    "payments": "Payments",
+    "menu": "Menu",
+    "dashboard": "Dashboard"
   },
   "AdminReservationPage": {
     "cardTitle": "All Reservations",
@@ -241,13 +243,52 @@
   },
   "AdminPaymentPage": {
     "cardTitle": "Process Payments",
-    "cardDescription": "View occupied tables and process customer bills.",
+    "cardDescription": "View open orders and process customer bills.",
     "searchPlaceholder": "Search by table name or customer...",
-    "noOccupiedTables": "No occupied tables with pending payments.",
+    "noOccupiedTables": "No open orders found.",
     "tableInfo": "Table: {tableName}",
     "customerInfo": "Customer: {customerName}",
     "billAmount": "Bill: ${amount}",
     "processPayment": "Process Payment"
+  },
+    "AdminMenuPage": {
+    "cardTitle": "Menu Management",
+    "cardDescription": "Add, edit, and remove menu items.",
+    "addItem": "Add Item",
+    "searchPlaceholder": "Search by name or category...",
+    "tableHead": {
+      "name": "Name",
+      "category": "Category",
+      "price": "Price"
+    },
+    "noItems": "No menu items found. Add one to get started.",
+    "noResults": "No results found for your search.",
+    "deleteDialog": {
+      "title": "Are you sure?",
+      "description": "This will permanently delete the menu item \"{name}\".",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "dialog": {
+      "addTitle": "Add New Menu Item",
+      "addDescription": "Enter the details for the new item.",
+      "editTitle": "Edit Menu Item",
+      "editDescription": "Update the details for this item.",
+      "name": "Item Name",
+      "namePlaceholder": "e.g. Steak Frites",
+      "category": "Category",
+      "categoryPlaceholder": "e.g. Main Courses",
+      "price": "Price",
+      "pricePlaceholder": "25.99",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "toast": {
+      "addSuccess": "Menu item added successfully.",
+      "updateSuccess": "Menu item updated successfully.",
+      "deleteSuccess": "Menu item deleted.",
+      "error": "An error occurred."
+    }
   },
   "PaymentDialog": {
     "title": "Process Payment for Table {tableName}",
